@@ -15,6 +15,7 @@ class Game < Gosu::Window
     super @width, @height, false
     self.caption = "stroids"
 
+    @tick = 1.0
     @ship = Ship.new(self)
     @ship.warp(400,300)
     @asteroids = []
@@ -30,35 +31,46 @@ class Game < Gosu::Window
 
   end
 
+  def objects
+    (@asteroids + @shots).push(@ship)
+  end
+
   def wrap_objects
-    @objects.each do |item|
+    objects.each do |item|
       item.x %= @width
       item.y %= @height
     end
   end
 
   def update
+    if button_down? Gosu::KbX
+      @tick = 5.0
+      @ship.hyper = true
+    else
+      @tick = 1.0
+      @ship.hyper = false
+    end
+
+
     if button_down? Gosu::KbLeft
-      @ship.turn_left
+      @ship.turn_left @tick
     elsif button_down? Gosu::KbRight
-      @ship.turn_right
+      @ship.turn_right @tick
     end
 
     if button_down? Gosu::KbUp
         @ship.accelerate
     end
 
-    if button_down? Gosu::KbSpace
+    if button_down? Gosu::KbZ
       @shots.concat @ship.fire
     end
 
-    @asteroids.each {|item| item.update }
-    @shots.each {|item| item.update }
-    @ship.update
+    objects.each {|item| item.update @tick }
 
     # Check collision
 
-    @shots.reject do |shot|
+    @shots = @shots.reject do |shot|
       shot.is_dead?
     end
 
@@ -66,10 +78,7 @@ class Game < Gosu::Window
   end
 
   def draw
-    @asteroids.each {|item| item.draw }
-    @shots.each {|item| item.draw }
-    @ship.draw
-
+    objects.each {|item| item.draw }
   end
 end
 

@@ -1,16 +1,25 @@
 require 'game_object'
 
 class Ship < GameObject
+  attr_accessor :hyper
+
+  FRICTION = 0.005
 
   def initialize (window)
     super window
-    @friction = 0.01
-    @angle = 0
-    @turn_speed = 3
-    @acceleration = 0.1
 
+    @angle = 0
     @image = Gosu::Image.new(window, "../media/ship.png", false)
   end
+
+  def turn_speed
+    @hyper ? 9 : 4
+  end
+
+  def acceleration
+    @hyper ? 0.1 : 0.05
+  end
+
 
   def warp (x, y)
     @x, @y = x, y
@@ -21,32 +30,30 @@ class Ship < GameObject
     @speed_y = 0
   end
 
-  def turn_left
-    @angle = (@angle - @turn_speed) % 360
+  def turn_left(tick)
+    @angle = (@angle - (turn_speed / tick)) % 360
   end
 
-  def turn_right
-    @angle =  (@angle + @turn_speed) % 360
+  def turn_right(tick)
+    @angle =  (@angle + (turn_speed / tick)) % 360
   end
 
   def fire
-    [Shot.new @window, @x, @y, @angle, @speed_x, @speed_y]
+    [Shot.new(@window, @x, @y, @angle, @speed_x, @speed_y)]
   end
 
   def accelerate
-    speed = speedDelta(@angle, @acceleration)
+    speed = speedDelta(@angle, acceleration)
     @speed_x += speed[0]
     @speed_y += speed[1]
   end
 
-  def update
-    #puts @angle
-    @x += @speed_x
-    @y += @speed_y
+  def update(tick)
+    @x += @speed_x / tick
+    @y += @speed_y / tick
 
-    #slow down
-    @speed_x *= 1 - @friction
-    @speed_y *= 1 - @friction
+    @speed_x *= 1 - FRICTION
+    @speed_y *= 1 - FRICTION
   end
 
   def draw

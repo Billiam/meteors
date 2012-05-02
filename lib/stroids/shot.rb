@@ -1,6 +1,6 @@
 class Shot < GameObject
   IMPULSE = 5
-  LIFETIME = 10
+  LIFETIME = 100.0
 
   def initialize (window, origin_x, origin_y, angle, speed_x = 0, speed_y = 0)
     super window
@@ -12,10 +12,6 @@ class Shot < GameObject
     @speed_x = speed[0] + speed_x
     @speed_y = speed[1] + speed_y
 
-    # This won't work :)'
-    #@velocity_x = velocity_x + IMPULSE
-    #@velocity_y = velocity_y + IMPULSE
-
     @life = LIFETIME
     @image = Gosu::Image.new(window, "../media/shot.png", false)
   end
@@ -24,13 +20,17 @@ class Shot < GameObject
     @life < 0
   end
 
-  def update
-    @life -= 1
-    @x += @speed_x
-    @y += @speed_y
+  def update (tick)
+    #reduce life of shot
+    @life -= 1.0/tick
+
+    @x += @speed_x/tick
+    @y += @speed_y/tick
   end
 
   def draw
-    @image.draw @x, @y, 1
+    # Calculate opacity based on lifetime
+    percent =[1, (@life / LIFETIME ) + 0.9].min
+    @image.draw @x, @y, 1, 1, 1, Gosu::Color::from_hsv(360, 0, percent)
   end
 end

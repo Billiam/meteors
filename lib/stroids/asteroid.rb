@@ -14,12 +14,11 @@ class Asteroid < GameObject
 
   def split
     @size -= 1
-    #set random velocities
     self.new @window, @size
   end
 
-  def update
-    @angle += @rotation_speed
+  def update(tick)
+    @angle += @rotation_speed/tick
   end
 
   def draw

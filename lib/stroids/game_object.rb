@@ -1,5 +1,5 @@
 class GameObject
-  attr_accessor :x, :y, :speed_x, :speed_y, :angle
+  attr_accessor :x, :y, :speed_x, :speed_y, :angle, :tick
 
   def speedDelta(angle, acceleration)
     radians = Gosu::degrees_to_radians angle - 90
