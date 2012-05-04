@@ -1,14 +1,19 @@
 require 'game_object'
 
 class Ship < GameObject
-  attr_accessor :hyper
+  attr_accessor :hyper, :health
 
   FRICTION = 0.005
+
+  class Gun
+
+  end
 
   def initialize (window)
     super window
 
     @angle = 0
+    @health = 0
     @image = Gosu::Image.new(window, "../media/ship.png", false)
   end
 
@@ -16,18 +21,12 @@ class Ship < GameObject
     @hyper ? 9 : 4
   end
 
-  def acceleration
+  def ship_power
     @hyper ? 0.1 : 0.05
   end
 
-
-  def warp (x, y)
-    @x, @y = x, y
-  end
-
   def stop
-    @speed_x = 0
-    @speed_y = 0
+    @speed = create_vector
   end
 
   def turn_left(tick)
@@ -39,24 +38,35 @@ class Ship < GameObject
   end
 
   def fire
-    [Shot.new(@window, @x, @y, @angle, @speed_x, @speed_y)]
+    [Shot.new(@window, @vector, @angle, @speed)]
   end
 
   def accelerate
-    speed = speedDelta(@angle, acceleration)
-    @speed_x += speed[0]
-    @speed_y += speed[1]
+    @speed += speed_delta @angle, ship_power
+  end
+
+  def hit! (item)
+    #reduce health / shield
+    @health -= 1
+  end
+
+  def is_live?
+    @health > 0
   end
 
   def update(tick)
-    @x += @speed_x / tick
-    @y += @speed_y / tick
+    #slow down based on friction
+    @speed *= 1 - FRICTION
 
-    @speed_x *= 1 - FRICTION
-    @speed_y *= 1 - FRICTION
+    # add speed including current tick to current position
+    @vector += create_vector @speed.x/tick, @speed.y/tick
+  end
+
+  def destroys_asteroids?
+    false
   end
 
   def draw
-    @image.draw_rot(@x, @y, 1, @angle)
+    @image.draw_rot(@vector.x, @vector.y, 1, @angle)
   end
 end

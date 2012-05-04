@@ -1,36 +1,44 @@
 class Shot < GameObject
-  IMPULSE = 5
-  LIFETIME = 100.0
+  attr_accessor :radius
 
-  def initialize (window, origin_x, origin_y, angle, speed_x = 0, speed_y = 0)
+  IMPULSE = 5
+  COLLISION_LIMIT = 1
+  LIFETIME = 80.0
+
+  def initialize (window, vector, angle, speed)
     super window
-    @x = origin_x
-    @y = origin_y
+    @vector = vector
+    @radius = 2
 
     #Inherit speed from ship
-    speed = speedDelta(angle, IMPULSE)
-    @speed_x = speed[0] + speed_x
-    @speed_y = speed[1] + speed_y
-
+    @speed = speed + speed_delta(angle, IMPULSE)
     @life = LIFETIME
+    @collisions = 0
     @image = Gosu::Image.new(window, "../media/shot.png", false)
   end
 
-  def is_dead?
-    @life < 0
+  def destroys_asteroids?
+    true
+  end
+
+  def is_live?
+    @collisions < COLLISION_LIMIT && @life > 0
   end
 
   def update (tick)
     #reduce life of shot
     @life -= 1.0/tick
 
-    @x += @speed_x/tick
-    @y += @speed_y/tick
+    @vector += create_vector(@speed.x / tick, @speed.y / tick)
+  end
+
+  def hit! (asteroid)
+    @collisions += 1
   end
 
   def draw
     # Calculate opacity based on lifetime
-    percent =[1, (@life / LIFETIME ) + 0.9].min
-    @image.draw @x, @y, 1, 1, 1, Gosu::Color::from_hsv(360, 0, percent)
+    percent =[1, (@life * 10) / LIFETIME].min
+    @image.draw @vector.x, @vector.y, 1, 1, 1, Gosu::Color::from_hsv(360, 0, percent)
   end
 end

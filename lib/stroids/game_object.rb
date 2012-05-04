@@ -1,16 +1,38 @@
-class GameObject
-  attr_accessor :x, :y, :speed_x, :speed_y, :angle, :tick
+require 'rquad'
 
-  def speedDelta(angle, acceleration)
+class GameObject
+  attr_accessor :speed, :angle, :tick, :vector
+  attr_reader :x, :y
+
+  def speed_delta(angle, acceleration)
     radians = Gosu::degrees_to_radians angle - 90
-    [acceleration * Math.cos(radians), acceleration * Math.sin(radians)]
+
+    create_vector acceleration * Math.cos(radians), acceleration * Math.sin(radians)
+  end
+
+  def x
+    @vector.x
+  end
+
+  def y
+    @vector.y
+  end
+
+  def create_vector (x=0, y=0)
+    RQuad::Vector.new x, y
+  end
+
+  def dist_to (item)
+    @vector.dist_to(item.vector)
   end
 
   def initialize (window)
     @window = window
-    @x = 0
-    @y = 0
-    @speed_x = 0
-    @speed_y = 0
+    @vector = create_vector
+    @speed = create_vector
+  end
+
+  def warp (x, y)
+    @vector = create_vector x, y
   end
 end
