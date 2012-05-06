@@ -1,46 +1,89 @@
+require 'observer'
 class Asteroid < GameObject
-  def initialize (window, size=10)
+  include Observable
+
+  attr_reader :radius, :points
+
+  def initialize (window, vector, speed=nil, size=3)
     super window
 
+    asteroid_type = Struct.new :radius, :points, :image
+    @sizes = {
+        1 => asteroid_type.new(8, 15, Gosu::Image.new(window, "../media/asteroid2.png", false)),
+        2 => asteroid_type.new(16, 10, Gosu::Image.new(window, "../media/asteroid3.png", false)),
+        3 => asteroid_type.new(32, 5, Gosu::Image.new(window, "../media/asteroid4.png", false)),
+    }
 
+    @health = 1
+    @dead = false
 
-    @size = size
-    @angle = 0
-    @rotation_speed = rand(800)/100 - 4
-    @image = Gosu::Image.new(window, "../media/asteroid.png", false)
-    @hit = false
+    @vector = vector
+
+    #random angle and rotation
+    @angle = rand 360
+    @rotation = rand 360
+
+    #random speed
+
+    #random rotation
+    @rotation_speed = rand * 8 -4
+
+    random_speed = speed_delta(angle, rand * 0.8 + 0.5)
+
+    # inherit velocity
+    if speed.is_a? RQuad::Vector
+      @speed = speed + random_speed
+    else
+      @speed = random_speed * 1.5
+    end
+
+    set_size size
   end
 
-  def radius
-    @size * 15 * 0.2
-  end
+  #TODO: Refactor
+  def set_size(size)
+    if size > 0
+      @size = size
+      data = @sizes[size]
 
-  def split
-    @size -= 1
-    self.new @window, @size
-  end
-
-  def hit! (item)
-    #if item is ship, ignore
-    if item.destroys_asteroids?
-      @size -= 1
-      @hit = true
+      @radius = data[:radius]
+      @image = data[:image]
+      @points = data[:points]
+    else
+      @dead = true
     end
   end
 
+  def hit! (item)
+    @health -= 1
+
+    if @health < 1
+      @dead = true
+
+      spawned = []
+      if @size > 1
+        2.times do
+          spawned << Asteroid.new(@window, @vector, @speed, @size - 1)
+        end
+        #  create new asteroids
+      end
+
+      changed
+      notify_observers self, spawned
+    end
+    # trigger explosion
+  end
+
   def is_live?
-    @size > 0
+    ! @dead
   end
 
   def update(tick)
-    @angle += @rotation_speed/tick
+    @rotation += @rotation_speed/tick
+    @vector += create_vector(@speed.x / tick, @speed.y / tick)
   end
 
   def draw
-    #@image.draw_rot(@vector.x, @vector.y, 1, @angle)
-    #color = @hit ? Gosu::Color::GREEN : Gosu::Color::WHITE
-    @image.draw_rot(@vector.x, @vector.y, 1, @angle, 0.5, 0.5, @size*0.2, @size*0.2)
-
-    #@image.draw_rot(@vector.x, @vector.y, 1, @angle, 0.5, 0.5, 1, 1, color)
+    @image.draw_rot(@vector.x, @vector.y, 1, @rotation, 0.5, 0.5)
   end
 end

@@ -2,9 +2,11 @@ $: << 'stroids'
 
 require 'gosu'
 require 'collider'
+require 'wave_manager'
 require 'ship'
 require 'asteroid'
 require 'shot'
+require 'score'
 require 'rquad'
 require 'fps_counter'
 
@@ -24,31 +26,52 @@ class Game < Gosu::Window
     super @width, @height, false
     self.caption = "stroids"
 
+    @collider = Collider.new @width, @height
+    @waves = WaveManager.new self
+    @counter = FPSCounter.new self
+    @score = Score.new self
+    @splash = true
+
+    @title_font = Gosu::Font.new(self, 'DokChampa', 24)
+  end
+
+  def start_game
+    @splash = false
+    @running = true
+
     @asteroids = []
+    #buffer to hold newly spawned asteroids until the next round
+    @new_asteroids = []
+
     @shots = []
 
     @ship = Ship.new(self)
     @ship.warp(400,300)
 
-    # Temp asteroid creation code
-    10.times do
-      asteroid = Asteroid.new(self)
-      asteroid.warp rand(800), rand(600.0)
-
-      @asteroids_quad
-      @asteroids << asteroid
-
-      @collider = Collider.new @width, @height
-    end
-
-
-    @counter = FPSCounter.new self
+    @score.reset
+    @waves.reset
   end
 
   def objects
     (@asteroids + @shots + [@ship])
   end
 
+  # Add an asteroid
+  def add_asteroid(asteroid)
+    asteroid.add_observer(self, :asteroid_updated)
+    @asteroids << asteroid
+  end
+
+  # Callback when asteroids are destroyed
+  def asteroid_updated (asteroid, new_asteroids)
+    @new_asteroids += new_asteroids
+    # Add points
+    unless asteroid.is_live?
+      @score.add asteroid.points
+    end
+  end
+
+  # Wrap objects at screen edges
   def wrap_objects
     objects.each do |item|
       item.vector.x %= @width
@@ -56,12 +79,24 @@ class Game < Gosu::Window
     end
   end
 
-  # Button dows event listeren
+  # Button down event listeren
   def button_down(id)
-    @counter.show_fps = true if id === Gosu::KbF1
+    case id
+      when Gosu::KbSpace
+        start_game unless @running
+      when Gosu::KbF1
+        @counter.toggle_fps
+      when Gosu::KbZ
+        @shots.concat(@ship.fire)
+      when Gosu::KbF2
+        @asteroids.each {|i| i.hit! nil}
+      else
+    end
   end
 
   def update
+    return unless @running
+
     # Handle bullettime
     if button_down? Gosu::KbX
       @tick = 5.0
@@ -79,11 +114,9 @@ class Game < Gosu::Window
     end
 
     if button_down? Gosu::KbUp
-        @ship.accelerate
-    end
-
-    if button_down? Gosu::KbZ
-      @shots.concat @ship.fire
+      @ship.thrust = true
+    else
+      @ship.thrust = false
     end
 
     #move all objects
@@ -92,24 +125,62 @@ class Game < Gosu::Window
     #wrap objects at screen edges
     wrap_objects
 
+    #update collider data and check for collisions
     @collider.update @asteroids, @shots, @ship
     @collider.notify_collisions
+
+    # check for player death
+    unless @ship.is_live?
+      game_over
+      return
+    end
 
     #expire shots
     @shots = @shots.reject do |shot|
       ! shot.is_live?
     end
 
+    # remove asteroids
     @asteroids.reject! do |asteroid|
       ! asteroid.is_live?
     end
 
+    #add newly spawned asteroids
+    @new_asteroids.each{|item| add_asteroid(item)}
+    @new_asteroids = []
+
+    @waves.next_wave if @asteroids.empty?
+  end
+
+  def game_over
+    @running = false
+  end
+
+  def splash_screen
+    @title_font.draw("GAME!", 175, 120, 50, 2.8, 2.8)
+    @title_font.draw("press SPACE to start", 216, 345, 50, 1, 1)
+  end
+
+  def end_screen
+    @title_font.draw("GAME OVER!", 175, 120, 50, 2.8, 2.8)
+    @title_font.draw("Final score: #{@score.score}", 216, 345, 50, 2.8, 2.8)
   end
 
   def draw
+    #Update the fps counter
     @counter.update
-
-    objects.each {|item| item.draw }
+    @score.draw
+    #Draw objects
+    if @running
+      objects.each {|item| item.draw }
+    else
+      #TODO: move to overlays
+      if @splash
+        splash_screen
+      else
+        end_screen
+      end
+    end
   end
 end
 

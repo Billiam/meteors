@@ -10,6 +10,10 @@ class FPSCounter
     @fps = 0
   end
 
+  def toggle_fps
+    @show_fps = !@show_fps
+  end
+
   def update
     @frames_counter += 1
     if Gosu::milliseconds - @milliseconds_before >= 1000

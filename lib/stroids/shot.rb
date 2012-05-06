@@ -1,20 +1,22 @@
 class Shot < GameObject
-  attr_accessor :radius
+  attr_accessor :radius, :angle
 
-  IMPULSE = 5
+  IMPULSE = 8
   COLLISION_LIMIT = 1
-  LIFETIME = 80.0
+  LIFETIME = 45.0
 
   def initialize (window, vector, angle, speed)
     super window
     @vector = vector
-    @radius = 2
+    @radius = 2.5
 
     #Inherit speed from ship
     @speed = speed + speed_delta(angle, IMPULSE)
     @life = LIFETIME
     @collisions = 0
     @image = Gosu::Image.new(window, "../media/shot.png", false)
+
+    @expire = false
   end
 
   def destroys_asteroids?
@@ -22,18 +24,19 @@ class Shot < GameObject
   end
 
   def is_live?
-    @collisions < COLLISION_LIMIT && @life > 0
+    ! @expire
   end
 
   def update (tick)
     #reduce life of shot
     @life -= 1.0/tick
-
+    @expire = true if @life <= 0
     @vector += create_vector(@speed.x / tick, @speed.y / tick)
   end
 
   def hit! (asteroid)
     @collisions += 1
+    @expire = true if @collisions >= COLLISION_LIMIT
   end
 
   def draw

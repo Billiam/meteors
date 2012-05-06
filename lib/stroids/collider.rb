@@ -7,7 +7,6 @@ class Collider
 
   def create_quad(list)
     quad = RQuad::QuadTree.new(RQuad::Vector.new(0, @height), RQuad::Vector.new(@width, 0))
-
     list.each do |item|
       quad.add(RQuad::QuadTreePayload.new(item.vector, item))
     end

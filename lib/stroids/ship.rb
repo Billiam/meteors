@@ -1,7 +1,7 @@
 require 'game_object'
 
 class Ship < GameObject
-  attr_accessor :hyper, :health
+  attr_accessor :hyper, :health, :radius
 
   FRICTION = 0.005
 
@@ -13,8 +13,13 @@ class Ship < GameObject
     super window
 
     @angle = 0
-    @health = 0
-    @image = Gosu::Image.new(window, "../media/ship.png", false)
+    @health = 1
+
+    @radius = 1
+    @thrust = false
+
+    @ship_img = Gosu::Image.new(window, "../media/ship.png", false)
+    @thrust_img = Gosu::Image.new(window, "../media/ship-thrust.png", false)
   end
 
   def turn_speed
@@ -41,6 +46,11 @@ class Ship < GameObject
     [Shot.new(@window, @vector, @angle, @speed)]
   end
 
+  def thrust=(thrust)
+    @thrust = thrust
+    accelerate if thrust
+  end
+
   def accelerate
     @speed += speed_delta @angle, ship_power
   end
@@ -62,11 +72,8 @@ class Ship < GameObject
     @vector += create_vector @speed.x/tick, @speed.y/tick
   end
 
-  def destroys_asteroids?
-    false
-  end
-
   def draw
-    @image.draw_rot(@vector.x, @vector.y, 1, @angle)
+    image = @thrust ? @thrust_img : @ship_img
+    image.draw_rot(@vector.x, @vector.y, 1, @angle)
   end
 end
