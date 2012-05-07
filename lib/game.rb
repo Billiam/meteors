@@ -32,7 +32,7 @@ class Game < Gosu::Window
     @score = Score.new self
     @splash = true
 
-    @title_font = Gosu::Font.new(self, 'DokChampa', 24)
+    @title_font = Gosu::Font.new self, '04b_20', 32
   end
 
   def start_game
@@ -40,6 +40,8 @@ class Game < Gosu::Window
     @running = true
 
     @asteroids = []
+    @effects = []
+
     #buffer to hold newly spawned asteroids until the next round
     @new_asteroids = []
 
@@ -62,12 +64,18 @@ class Game < Gosu::Window
     @asteroids << asteroid
   end
 
+  def add_shot(shots)
+    @shots.concat shots
+    @ship.active_shots += shots.length
+  end
+
   # Callback when asteroids are destroyed
   def asteroid_updated (asteroid, new_asteroids)
     @new_asteroids += new_asteroids
     # Add points
     unless asteroid.is_live?
       @score.add asteroid.points
+      @ship.statistics.asteroids += 1
     end
   end
 
@@ -87,9 +95,17 @@ class Game < Gosu::Window
       when Gosu::KbF1
         @counter.toggle_fps
       when Gosu::KbZ
-        @shots.concat(@ship.fire)
+        add_shot @ship.fire if @running && @ship.can_fire?
       when Gosu::KbF2
-        @asteroids.each {|i| i.hit! nil}
+        @asteroids.each {|i| i.hit! nil} if @running
+      when Gosu::KbEscape
+        # return to splash screen
+        if @running
+          @running = false
+          @splash = true
+        else
+          exit
+        end
       else
     end
   end
@@ -140,15 +156,28 @@ class Game < Gosu::Window
       ! shot.is_live?
     end
 
+    @ship.active_shots = @shots.length
+
     # remove asteroids
     @asteroids.reject! do |asteroid|
-      ! asteroid.is_live?
+      unless asteroid.is_live?
+        @effects += asteroid.effect
+      end
+    end
+
+    @effects.reject! do |effect|
+      effect.is_dead?
     end
 
     #add newly spawned asteroids
     @new_asteroids.each{|item| add_asteroid(item)}
     @new_asteroids = []
 
+    #update effects
+    @effects.each{|effect| effect.update @tick}
+
+    # Go to next wave
+    # TODO: Add delay
     @waves.next_wave if @asteroids.empty?
   end
 
@@ -156,23 +185,41 @@ class Game < Gosu::Window
     @running = false
   end
 
+
   def splash_screen
-    @title_font.draw("GAME!", 175, 120, 50, 2.8, 2.8)
-    @title_font.draw("press SPACE to start", 216, 345, 50, 1, 1)
+    image = Gosu::Image.from_text(self, "TOTALLY NOT ASTEROIDS", "Komika Boogie", 84)
+    image.draw 175, 120, 50
+    @title_font.draw("press SPACE to start", 175, 345, 50, 0.3, 0.3)
   end
 
   def end_screen
-    @title_font.draw("GAME OVER!", 175, 120, 50, 2.8, 2.8)
-    @title_font.draw("Final score: #{@score.score}", 216, 345, 50, 2.8, 2.8)
+    image = Gosu::Image.from_text(self, " Game Over!", "Komika Boogie", 128)
+    image.draw 175, 120, 50
+
+    @title_font.draw("Final score: #{@score.score}", 175, 345, 50, 0.5, 0.5)
+    accuracy = @ship.statistics.shots == 0 ? 100 : (@ship.statistics.asteroids / @ship.statistics.shots.to_f * 100).floor
+
+    #draw statistics
+    pos = 385
+    [
+      "Shots: #{@ship.statistics.shots}",
+      "Kills: #{@ship.statistics.asteroids}",
+      "Accuracy: %.1f%" % accuracy,
+      "Fuel Used: %.1f lbs" % @ship.statistics.fuel,
+    ].each {|item|
+      @title_font.draw item, 175, pos, 50, 0.3, 0.3
+      pos += 20
+    }
   end
 
   def draw
     #Update the fps counter
     @counter.update
-    @score.draw
     #Draw objects
     if @running
-      objects.each {|item| item.draw }
+      @score.draw
+      objects.each(&:draw)
+      @effects.each(&:draw)
     else
       #TODO: move to overlays
       if @splash

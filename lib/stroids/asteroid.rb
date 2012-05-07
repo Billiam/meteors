@@ -1,17 +1,26 @@
 require 'observer'
+require 'particle'
 class Asteroid < GameObject
   include Observable
 
   attr_reader :radius, :points
+
+
+  class Effect < Particle
+    def initialize (window, lifetime, vector, speed = 0)
+      super
+      @image = Gosu::Image.new(window, "../media/asteroid-particle.png", false)
+    end
+  end
 
   def initialize (window, vector, speed=nil, size=3)
     super window
 
     asteroid_type = Struct.new :radius, :points, :image
     @sizes = {
-        1 => asteroid_type.new(8, 15, Gosu::Image.new(window, "../media/asteroid2.png", false)),
-        2 => asteroid_type.new(16, 10, Gosu::Image.new(window, "../media/asteroid3.png", false)),
-        3 => asteroid_type.new(32, 5, Gosu::Image.new(window, "../media/asteroid4.png", false)),
+        1 => asteroid_type.new(8, 100, Gosu::Image.new(window, "../media/asteroid2.png", false)),
+        2 => asteroid_type.new(16, 50, Gosu::Image.new(window, "../media/asteroid3.png", false)),
+        3 => asteroid_type.new(32, 20, Gosu::Image.new(window, "../media/asteroid4.png", false)),
     }
 
     @health = 1
@@ -23,7 +32,6 @@ class Asteroid < GameObject
     @angle = rand 360
     @rotation = rand 360
 
-    #random speed
 
     #random rotation
     @rotation_speed = rand * 8 -4
@@ -85,5 +93,16 @@ class Asteroid < GameObject
 
   def draw
     @image.draw_rot(@vector.x, @vector.y, 1, @rotation, 0.5, 0.5)
+  end
+
+  # return effect particles for explosion as an array
+  def effect
+    particle_count = rand(5) + 10
+    particle_count.times.collect do
+      # inherit speed from asteroid, and add random velocity
+      speed = speed_delta(rand * 360, rand * 5 - 2.5) + @speed
+      # create a new single particle
+      Effect.new @window, 30, @vector, speed
+    end
   end
 end

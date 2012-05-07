@@ -1,8 +1,7 @@
 require 'rquad'
 
 class GameObject
-  attr_accessor :speed, :angle, :tick, :vector
-  attr_reader :x, :y
+  attr_accessor :speed, :angle, :vector
 
   def speed_delta(angle, acceleration)
     radians = Gosu::degrees_to_radians angle - 90

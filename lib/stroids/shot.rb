@@ -12,15 +12,12 @@ class Shot < GameObject
 
     #Inherit speed from ship
     @speed = speed + speed_delta(angle, IMPULSE)
+    @angle = angle
     @life = LIFETIME
     @collisions = 0
     @image = Gosu::Image.new(window, "../media/shot.png", false)
-
+    @trail = Gosu::Image.new(window, "../media/trail.png", false)
     @expire = false
-  end
-
-  def destroys_asteroids?
-    true
   end
 
   def is_live?
@@ -42,6 +39,9 @@ class Shot < GameObject
   def draw
     # Calculate opacity based on lifetime
     percent =[1, (@life * 10) / LIFETIME].min
+
+    #vscale = 5
     @image.draw @vector.x, @vector.y, 1, 1, 1, Gosu::Color::from_hsv(360, 0, percent)
+    #@trail.draw_rot @vector.x, @vector.y, 1, @angle #, 0.25, -0.5, 1, 1
   end
 end
