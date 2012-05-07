@@ -19,7 +19,7 @@ class Score
   end
 
   def draw
-    image = Gosu::Image.from_text(@window, "SCORE: #@score", "DokChampa", 16)
-    image.draw(0, 0, 20, 1, 1, Gosu::Color::RED)
+    image = Gosu::Image.from_text(@window, "SCORE: #@score", "04b09", 8)
+    image.draw(10, 10, 20, 1, 1, Gosu::Color::RED)
   end
 end
