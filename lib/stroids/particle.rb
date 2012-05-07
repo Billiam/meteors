@@ -1,4 +1,6 @@
 class Particle
+  attr_accessor :vector
+
   def initialize (window, lifetime, vector, speed=0)
     @window = window
     @life = @lifetime = lifetime

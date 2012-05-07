@@ -95,6 +95,8 @@ class Ship < GameObject
   end
 
   def draw
+    return unless is_live?
+
     image = @thrust ? @thrust_img : @ship_img
     image.draw_rot(@vector.x, @vector.y, 1, @angle)
   end

@@ -1,8 +1,11 @@
-class Score
+require 'overlay'
+
+class Score < Overlay
   attr_accessor :score
 
   def initialize(window)
-    @window = window
+    super window
+    @font = Gosu::Font.new window, '04b09', 8
     reset
   end
 
@@ -19,7 +22,7 @@ class Score
   end
 
   def draw
-    image = Gosu::Image.from_text(@window, "SCORE: #@score", "04b09", 8)
-    image.draw(10, 10, 20, 1, 1, Gosu::Color::RED)
+    return unless @visible
+    @font.draw "SCORE: #@score", 10, 10, 20
   end
 end
