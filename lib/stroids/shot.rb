@@ -38,10 +38,10 @@ class Shot < GameObject
 
   def draw
     # Calculate opacity based on lifetime
-    percent =[1, (@life * 10) / LIFETIME].min
+    percent = [1, (@life * 10) / LIFETIME].min
+    opacity = (percent * 255).floor
+    color = Gosu::Color::from_ahsv([opacity, 0].max, 0, 0, 1)
 
-    #vscale = 5
-    @image.draw @vector.x, @vector.y, 1, 1, 1, Gosu::Color::from_hsv(360, 0, percent)
-    #@trail.draw_rot @vector.x, @vector.y, 1, @angle #, 0.25, -0.5, 1, 1
+    @image.draw @vector.x, @vector.y, ZOrder::PROJECTILE, 1, 1, color
   end
 end

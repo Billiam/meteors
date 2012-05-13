@@ -1,10 +1,8 @@
-require 'overlay'
-
-class Score < Overlay
+class Score
   attr_accessor :score
 
   def initialize(window)
-    super window
+    @window = window
     @font = Gosu::Font.new window, '04b09', 8
     reset
   end
@@ -22,7 +20,6 @@ class Score < Overlay
   end
 
   def draw
-    return unless @visible
-    @font.draw "SCORE: #@score", 10, 10, 20
+    @font.draw "SCORE: #@score", 10, 10, ZOrder::GUI
   end
 end

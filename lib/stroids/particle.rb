@@ -1,13 +1,16 @@
 class Particle
   attr_accessor :vector
 
-  def initialize (window, lifetime, vector, speed=0)
+  def initialize (window, lifetime, vector, speed=nil)
     @window = window
     @life = @lifetime = lifetime
 
     @vector = vector
+    # Add a position to represent height
+    @vector.z = 20
 
-    @speed = speed.is_a?(RQuad::Vector) ? speed : RQuad::Vector.new(0, 0)
+    @speed = speed || RQuad::Vector.new(0, 0)
+    @speed.z = rand * 4 - 2
 
     @dead = false
   end
@@ -17,17 +20,32 @@ class Particle
   end
 
   def update (tick)
+    @speed.z -= 0.05/tick
+
+    if @vector.z + @speed.z <= 0
+      # Bouncing objects lose energy and reverse
+      @speed.z *= -1
+      @speed *= 0.5
+    end
+
     @life -= 1/tick
     @vector += @speed/tick
+
     @dead = true if @life <= 0
   end
 
   def opacity
-    @life / @lifetime
+    (@life / @lifetime * 255).floor
   end
 
   def draw
-    color = Gosu::Color::from_hsv(360, 0, [opacity, 0].max)
-    @image.draw @vector.x, @vector.y, 10, 1, 1, color
+    alpha = [opacity, 0].max
+    color = Gosu::Color::from_ahsv(alpha, 0, 0, 1)
+    shadow_color = Gosu::Color::from_ahsv(alpha, 0, 0, 0)
+
+
+    @image.draw @vector.x, @vector.y + (20 - @vector.z), ZOrder::PARTICLE, 1, 1, color
+    #draw shadow
+    @image.draw @vector.x, @vector.y + 20, ZOrder::SHADOW, 1, 1, shadow_color
   end
 end

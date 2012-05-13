@@ -1,6 +1,3 @@
-require 'game_object'
-require 'particle'
-
 class Ship < GameObject
   attr_accessor :hyper, :health, :radius, :active_shots
   attr_reader :statistics
@@ -10,7 +7,7 @@ class Ship < GameObject
   class Effect < Particle
     def initialize (window, lifetime, vector, speed = 0)
       super
-      @image = Gosu::Image.new(window, "../media/shot.png", false)
+      @image = window.load_image('shot')
     end
   end
 
@@ -23,18 +20,26 @@ class Ship < GameObject
 
     @angle = 0
     @health = 1
-
+    @dead = false
     @active_shots = 0
-    @radius = 1
+    @radius = 3
     @thrust = false
     @hyper = false
 
-    @ship_img = Gosu::Image.new(window, "../media/ship.png", false)
-    @thrust_img = Gosu::Image.new(window, "../media/ship-thrust.png", false)
+    @tick = 1.0
+
+    @thrust_instance = nil
+    @shot_sound = window.load_sound('fire')
+    @engine_sound = window.load_sound('engine')
+    @explode_sound = window.load_sound('ship_explode')
+
+    @ship_img = window.load_image('ship')
+    @shadow_img = window.load_image('ship-shadow')
+    @thrust_img = window.load_image('ship-thrust')
   end
 
   def can_fire?
-    @active_shots < 4
+    @active_shots < 15 && is_live?
   end
 
   def turn_speed
@@ -61,13 +66,27 @@ class Ship < GameObject
     #check for can fire
 
     @statistics.shots += 1
+    @shot_sound.play(1, sound_speed)
     [Shot.new(@window, @vector, @angle, @speed)]
   end
 
   def thrust=(thrust)
     @thrust = thrust
-    accelerate if thrust
+    if thrust
+      accelerate
+      @thrust_instance ||= @engine_sound.play 0.4, sound_speed, true
+    else
+      if @thrust_instance
+        @thrust_instance.stop
+        @thrust_instance = nil
+      end
+    end
   end
+
+  def sound_speed
+    1/@tick
+  end
+
 
   def accelerate
     @speed += speed_delta @angle, ship_power
@@ -76,39 +95,60 @@ class Ship < GameObject
   def hit! (item)
     #reduce health / shield
     @health -= 1
+    @dead = health <= 0
+    destroy! if @dead
+  end
+
+  def destroy!
+    @explode_sound.play
   end
 
   def is_live?
-    @health > 0
+    ! @dead
   end
 
   def update(tick)
+    if tick != @tick
+      @tick = tick
+      #update speed of playing sounds
+      @thrust_instance.speed = sound_speed if @thrust_instance
+    end
+
     #slow down based on friction
     @speed *= 1 - FRICTION
 
     if @thrust
       @statistics.fuel += ship_power / tick
+    else
+
     end
 
     # add speed including current tick to current position
-    @vector += create_vector @speed.x/tick, @speed.y/tick
+    @vector += create_vector(@speed.x, @speed.y) / tick
   end
 
   def draw
     return unless is_live?
-
     image = @thrust ? @thrust_img : @ship_img
-    image.draw_rot(@vector.x, @vector.y, 1, @angle)
+    @window.scale(1, 0.55, @vector.x, @vector.y) do
+      image.draw_rot(@vector.x, @vector.y, ZOrder::SHIP, @angle)
+    end
+
+    @window.scale(1, 0.55, @vector.x, @vector.y + 30) do
+      @shadow_img.draw_rot(@vector.x, @vector.y + 30, ZOrder::SHADOW, @angle)
+    end
   end
 
   # return effect particles for explosion as an array
   def effect
-    particle_count = rand(5) + 30
+    particle_count = rand(15) + 50
     particle_count.times.collect do
       # inherit speed from asteroid, and add random velocity
-      speed = speed_delta(rand * 360, rand * 10 - 5) + @speed
+      particle_speed = rand * 10 - 5
+      life = rand(60) + 60
+      speed = speed_delta(rand * 360, particle_speed) + @speed
       # create a new single particle
-      Effect.new @window, 30, @vector, speed
+      Effect.new @window, life , @vector, speed
     end
   end
 end

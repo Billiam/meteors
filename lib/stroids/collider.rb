@@ -19,8 +19,18 @@ class Collider
     @ship = ship
   end
 
+  # Create a two corner bounding box to define the search region
+  def boundingbox_range(item)
+    range = 32
+    {
+      bl: RQuad::Vector.new([item.vector.x - range, 0].max, [item.vector.y + range, @height].min),
+      tr: RQuad::Vector.new([item.vector.x + range, @width].min, [item.vector.y - range, 0].max)
+    }
+  end
+
   def get_candidates (item, tree)
-    tree.approx_near(item.vector, 5).map(&:data)
+    box = boundingbox_range item
+    tree.payloads_in_region(box[:bl], box[:tr]).map(&:data)
   end
 
   def get_collisions(collidables, tree)

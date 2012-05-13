@@ -1,108 +1,114 @@
-require 'observer'
-require 'particle'
 class Asteroid < GameObject
   include Observable
-
-  attr_reader :radius, :points
-
+  attr_reader :radius, :points, :health
 
   class Effect < Particle
     def initialize (window, lifetime, vector, speed = 0)
       super
-      @image = Gosu::Image.new(window, "../media/asteroid-particle.png", false)
+      @image = window.load_image 'asteroid-particle'
     end
   end
+
 
   def initialize (window, vector, speed=nil, size=3)
     super window
 
-    asteroid_type = Struct.new :radius, :points, :image
-    @sizes = {
-        1 => asteroid_type.new(8, 100, Gosu::Image.new(window, "../media/asteroid2.png", false)),
-        2 => asteroid_type.new(16, 50, Gosu::Image.new(window, "../media/asteroid3.png", false)),
-        3 => asteroid_type.new(32, 20, Gosu::Image.new(window, "../media/asteroid4.png", false)),
-    }
+    case size
+      when 1
+        @radius = 8
+        @points = 100
+        @image = window.load_image 'asteroid2'
+        @shadow = window.load_image 'shadow2'
+      when 2
+        @radius = 16
+        @points = 50
+        @image = window.load_image 'asteroid3'
+        @shadow = window.load_image 'shadow3'
+      when 3
+        @radius = 24
+        @points = 120
+        @image = window.load_image 'asteroid4'
+        @shadow = window.load_image 'shadow4'
+      else
+    end
+
+
+    @sound = window.load_sound 'asteroid_explode'
+
+    @split_size = size > 1 ? size - 1 : nil
 
     @health = 1
     @dead = false
-
     @vector = vector
+    @tick = 1.0
 
-    #random angle and rotation
+    #random starting angle and rotation
     @angle = rand 360
     @rotation = rand 360
 
-
     #random rotation
-    @rotation_speed = rand * 8 -4
+    @rotation_speed = rand * 8 - 4
 
     random_speed = speed_delta(angle, rand * 0.8 + 0.5)
 
     # inherit velocity
-    if speed.is_a? RQuad::Vector
+    if speed
       @speed = speed + random_speed
     else
       @speed = random_speed * 1.5
     end
 
-    set_size size
   end
 
-  #TODO: Refactor
-  def set_size(size)
-    if size > 0
-      @size = size
-      data = @sizes[size]
-
-      @radius = data[:radius]
-      @image = data[:image]
-      @points = data[:points]
-    else
-      @dead = true
-    end
-  end
-
-  def hit! (item)
+  def hit!(item)
     @health -= 1
-
     if @health < 1
       @dead = true
 
-      spawned = []
-      if @size > 1
-        2.times do
-          spawned << Asteroid.new(@window, @vector, @speed, @size - 1)
-        end
-        #  create new asteroids
-      end
+      @sound.play 0.8, 1/@tick
 
+      spawned = @split_size ? [split_factory, split_factory] : []
+
+      # Trigger chanegs for observers
       changed
       notify_observers self, spawned
     end
-    # trigger explosion
+  end
+
+  # Factory method for splitting off new asteroids
+  def split_factory
+    Asteroid.new @window, @vector, @speed, @split_size
+  end
+
+  def is_dead?
+    @dead
   end
 
   def is_live?
     ! @dead
   end
 
-  def update(tick)
+  def update(tick=1.0)
+    @tick = tick
     @rotation += @rotation_speed/tick
-    @vector += create_vector(@speed.x / tick, @speed.y / tick)
+    @vector += create_vector(@speed.x, @speed.y) / tick
   end
 
   def draw
-    @image.draw_rot(@vector.x, @vector.y, 1, @rotation, 0.5, 0.5)
+    @image.draw_rot @vector.x, @vector.y, ZOrder::ASTEROID, @rotation, 0.5, 0.5
+    @shadow.draw @vector.x - @radius, @vector.y + 30, ZOrder::SHADOW, 1, 0.5
   end
 
   # return effect particles for explosion as an array
   def effect
     particle_count = rand(5) + 10
     particle_count.times.collect do
+      velocity = rand * 3 - 1.5
+      life = rand(45) + 45
       # inherit speed from asteroid, and add random velocity
-      speed = speed_delta(rand * 360, rand * 5 - 2.5) + @speed
+      speed = speed_delta(rand * 360, velocity) + @speed
       # create a new single particle
-      Effect.new @window, 30, @vector, speed
+      Effect.new @window, life, @vector, speed
     end
   end
 end
