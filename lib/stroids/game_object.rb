@@ -17,6 +17,10 @@ class GameObject
     @vector.y
   end
 
+  def zorder
+    ZOrder::OBJECT + y
+  end
+
   def create_vector (x=0, y=0)
     RQuad::Vector.new x, y
   end

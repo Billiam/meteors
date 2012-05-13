@@ -95,7 +95,7 @@ class Asteroid < GameObject
   end
 
   def draw
-    @image.draw_rot @vector.x, @vector.y, ZOrder::ASTEROID, @rotation, 0.5, 0.5
+    @image.draw_rot @vector.x, @vector.y, zorder, @rotation, 0.5, 0.5
     @shadow.draw @vector.x - @radius, @vector.y + 30, ZOrder::SHADOW, 1, 0.5
   end
 
@@ -103,10 +103,12 @@ class Asteroid < GameObject
   def effect
     particle_count = rand(5) + 10
     particle_count.times.collect do
-      velocity = rand * 3 - 1.5
+      velocity = rand * 5 - 2.5
       life = rand(45) + 45
+      random_speed = speed_delta(rand * 360, velocity)
+      random_speed.y *= 0.5
       # inherit speed from asteroid, and add random velocity
-      speed = speed_delta(rand * 360, velocity) + @speed
+      speed = random_speed + @speed
       # create a new single particle
       Effect.new @window, life, @vector, speed
     end

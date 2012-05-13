@@ -15,6 +15,6 @@ class PauseState < StroidsState
   def draw
     @state.draw
     @background.draw 0, 0, ZOrder::OVERLAY
-    @heading.draw 175, 120, ZOrder::MODAL
+    @heading.draw 175, 120, ZOrder::OVERLAY
   end
 end

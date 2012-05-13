@@ -42,6 +42,6 @@ class Shot < GameObject
     opacity = (percent * 255).floor
     color = Gosu::Color::from_ahsv([opacity, 0].max, 0, 0, 1)
 
-    @image.draw @vector.x, @vector.y, ZOrder::PROJECTILE, 1, 1, color
+    @image.draw @vector.x, @vector.y, zorder, 1, 1, color
   end
 end

@@ -26,8 +26,8 @@ class GameoverState < StroidsState
     @state.draw
 
     @background.draw 0, 0, ZOrder::OVERLAY
-    @heading.draw 175, 120, ZOrder::MODAL
-    @title_font.draw("Final score: #{@state.score}", 175, 345, ZOrder::MODAL, 0.5, 0.5)
+    @heading.draw 175, 120, ZOrder::OVERLAY
+    @title_font.draw("Final score: #{@state.score}", 175, 345, ZOrder::OVERLAY, 0.5, 0.5)
     ship = @state.ship
 
     accuracy = ship.statistics.shots == 0 ? 100 : (ship.statistics.asteroids / ship.statistics.shots.to_f * 100).floor
@@ -42,7 +42,7 @@ class GameoverState < StroidsState
     ]
 
     text.each do|item|
-      @title_font.draw item, 175, pos, ZOrder::MODAL, 0.3, 0.3
+      @title_font.draw item, 175, pos, ZOrder::OVERLAY, 0.3, 0.3
       pos += 20
     end
   end

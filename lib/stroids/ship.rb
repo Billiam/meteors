@@ -63,8 +63,6 @@ class Ship < GameObject
   end
 
   def fire
-    #check for can fire
-
     @statistics.shots += 1
     @shot_sound.play(1, sound_speed)
     [Shot.new(@window, @vector, @angle, @speed)]
@@ -132,7 +130,7 @@ class Ship < GameObject
 
     image = @thrust ? @thrust_img : @ship_img
     @window.scale(1, 0.55, @vector.x, @vector.y) do
-      image.draw_rot(@vector.x, @vector.y, ZOrder::SHIP, @angle)
+      image.draw_rot(@vector.x, @vector.y, zorder, @angle)
     end
 
     @window.scale(1, 0.55, @vector.x, @vector.y + 30) do
@@ -147,7 +145,9 @@ class Ship < GameObject
       # inherit speed from asteroid, and add random velocity
       particle_speed = rand * 10 - 5
       life = rand(60) + 60
-      speed = speed_delta(rand * 360, particle_speed) + @speed
+      random_speed = speed_delta(rand * 360, particle_speed)
+      random_speed.y *= 0.5
+      speed = random_speed + @speed
       # create a new single particle
       Effect.new @window, life , @vector, speed
     end

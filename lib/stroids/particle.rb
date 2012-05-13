@@ -10,9 +10,13 @@ class Particle
     @vector.z = 20
 
     @speed = speed || RQuad::Vector.new(0, 0)
-    @speed.z = rand * 4 - 2
+    @speed.z = rand * 3 - 1.5
 
     @dead = false
+  end
+
+  def zorder
+    ZOrder::OBJECT + @vector.y
   end
 
   def is_dead?
@@ -44,7 +48,7 @@ class Particle
     shadow_color = Gosu::Color::from_ahsv(alpha, 0, 0, 0)
 
 
-    @image.draw @vector.x, @vector.y + (20 - @vector.z), ZOrder::PARTICLE, 1, 1, color
+    @image.draw @vector.x, @vector.y + (20 - @vector.z), zorder, 1, 1, color
     #draw shadow
     @image.draw @vector.x, @vector.y + 20, ZOrder::SHADOW, 1, 1, shadow_color
   end
