@@ -39,7 +39,7 @@ class Ship < GameObject
   end
 
   def can_fire?
-    @active_shots < 15 && is_live?
+    @active_shots < 4 && is_live?
   end
 
   def turn_speed
@@ -129,6 +129,7 @@ class Ship < GameObject
 
   def draw
     return unless is_live?
+
     image = @thrust ? @thrust_img : @ship_img
     @window.scale(1, 0.55, @vector.x, @vector.y) do
       image.draw_rot(@vector.x, @vector.y, ZOrder::SHIP, @angle)
