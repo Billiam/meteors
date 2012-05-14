@@ -19,16 +19,19 @@ class Asteroid < GameObject
         @points = 100
         @image = window.load_image 'asteroid2'
         @shadow = window.load_image 'shadow2'
+        @pitch = 1.2
       when 2
         @radius = 16
         @points = 50
         @image = window.load_image 'asteroid3'
         @shadow = window.load_image 'shadow3'
+        @pitch = 0.85
       when 3
         @radius = 24
         @points = 120
         @image = window.load_image 'asteroid4'
         @shadow = window.load_image 'shadow4'
+        @pitch = 0.65
       else
     end
 
@@ -65,7 +68,7 @@ class Asteroid < GameObject
     if @health < 1
       @dead = true
 
-      @sound.play 0.8, 1/@tick
+      @sound.play 0.8, @pitch/@tick
 
       spawned = @split_size ? [split_factory, split_factory] : []
 
