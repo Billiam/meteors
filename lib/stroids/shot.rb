@@ -15,8 +15,7 @@ class Shot < GameObject
     @angle = angle
     @life = LIFETIME
     @collisions = 0
-    @image = Gosu::Image.new(window, "../media/shot.png", false)
-    @trail = Gosu::Image.new(window, "../media/trail.png", false)
+    @image = window.load_image('shot')
     @expire = false
   end
 

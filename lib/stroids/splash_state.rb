@@ -32,11 +32,11 @@ class SplashState < StroidsState
   end
 
   def draw
-    @background.draw 0, 0, 50
+    @background.draw 0, 0, ZOrder::OVERLAY
 
     @animated_objects.each(&:draw)
-    @heading.draw 175, 120, 50
-    @title_font.draw("press SPACE to start", 175, 345, 50, 0.3, 0.3)
+    @heading.draw 175, 120, ZOrder::OVERLAY
+    @title_font.draw("press SPACE to start", 175, 345, ZOrder::OVERLAY, 0.3, 0.3)
   end
 
   def button_down(id)

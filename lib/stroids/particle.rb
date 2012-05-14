@@ -28,28 +28,27 @@ class Particle
 
     if @vector.z + @speed.z <= 0
       # Bouncing objects lose energy and reverse
-      @speed.z *= -1
+      @speed.z = @speed.z.abs
       @speed *= 0.5
     end
 
     @life -= 1/tick
     @vector += @speed/tick
-
     @dead = true if @life <= 0
   end
 
   def opacity
-    (@life / @lifetime * 255).floor
+    [1, (@life * 7) / @lifetime].min * 255
   end
 
   def draw
     alpha = [opacity, 0].max
-    color = Gosu::Color::from_ahsv(alpha, 0, 0, 1)
+    color = Gosu::Color::from_ahsv(alpha, 0, 0, 0.8)
     shadow_color = Gosu::Color::from_ahsv(alpha, 0, 0, 0)
 
 
     @image.draw @vector.x, @vector.y + (20 - @vector.z), zorder, 1, 1, color
     #draw shadow
-    @image.draw @vector.x, @vector.y + 20, ZOrder::SHADOW, 1, 1, shadow_color
+    @image.draw @vector.x, @vector.y + 22, ZOrder::SHADOW, 1, 1, shadow_color
   end
 end

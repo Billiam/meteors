@@ -104,7 +104,8 @@ class Asteroid < GameObject
     particle_count = rand(5) + 10
     particle_count.times.collect do
       velocity = rand * 5 - 2.5
-      life = rand(45) + 45
+      life = rand(60) + 60
+
       random_speed = speed_delta(rand * 360, velocity)
       random_speed.y *= 0.5
       # inherit speed from asteroid, and add random velocity

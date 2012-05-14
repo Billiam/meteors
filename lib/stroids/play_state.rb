@@ -1,5 +1,5 @@
 class PlayState < StroidsState
-  attr_reader :ship
+  attr_reader :ship, :asteroids
 
   def initialize(window)
     super
@@ -48,6 +48,10 @@ class PlayState < StroidsState
     @asteroids + @effects + @shots + [@ship]
   end
 
+  def round_complete?
+    @asteroids.empty? && @active
+  end
+
   # Wrap objects at screen edges
   def wrap_objects
     moving_objects.each do |item|
@@ -76,7 +80,7 @@ class PlayState < StroidsState
           #create  new?
         @window.state = SplashState.new @window
       when Gosu::KbF2
-        @asteroids.each {|i| i.hit! nil} if @running
+        @asteroids.each {|i| i.hit! nil} if @active
       else
     end
   end
@@ -153,10 +157,6 @@ class PlayState < StroidsState
     # check for player death
     if ! @ship.is_live? && @active
       @active = false
-      # TODO: Has to be a better way to spawn shit
-      # Give ship access to state and push directly
-      # Give ship access to particle store and push
-      # Event listeners
       @effects += @ship.effect
       game_over
     end
@@ -165,17 +165,15 @@ class PlayState < StroidsState
     @effects.each{|effect| effect.update @tick}
 
     # Go to next wave
-    if @asteroids.empty? && @running
-      # Add delay
-      @waves.next_wave
-    end
+    @waves.update
+
   end
 
   def game_over
     bullettime_off
     @ship.thrust = false
-    @window.timers.set_timeout 2000 do
-    @window.state = GameoverState.new(@window, self)
+    @window.timers.set_timeout 3000 do
+      @window.state = GameoverState.new(@window, self)
     end
   end
 

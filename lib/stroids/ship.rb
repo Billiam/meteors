@@ -11,6 +11,7 @@ class Ship < GameObject
     end
   end
 
+
   def initialize (window)
     super window
 
@@ -144,7 +145,7 @@ class Ship < GameObject
     particle_count.times.collect do
       # inherit speed from asteroid, and add random velocity
       particle_speed = rand * 10 - 5
-      life = rand(60) + 60
+      life = rand(60) + 120
       random_speed = speed_delta(rand * 360, particle_speed)
       random_speed.y *= 0.5
       speed = random_speed + @speed
