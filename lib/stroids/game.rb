@@ -74,10 +74,13 @@ class Game < Gosu::Window
     @sounds[name] ||= Gosu::Sample.new self, File.join(MEDIA, 'audio', "#{name}.wav")
   end
 
+  def font_path(name)
+    File.join(MEDIA, 'fonts', "#{name}.ttf")
+  end
   # Load and cache fonts from media path
   def load_font(name, size)
     @fonts ||= {}
-    @fonts[[name,size]] ||= Gosu::Font.new self, name, size
+    @fonts[[name,size]] ||= Gosu::Font.new self, font_path(name), size
   end
 
 end

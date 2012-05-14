@@ -2,7 +2,7 @@ class PauseState < StroidsState
   def initialize(window, state)
     super window
     @state = state
-    @heading = Gosu::Image.from_text(window, "Paused", "Komika Boogie", 128)
+    @heading = Gosu::Image.from_text(window, ' Paused', window.font_path('KOMIKABG'), 128)
     @background = dark_overlay
   end
 
