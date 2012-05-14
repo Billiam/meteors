@@ -52,7 +52,7 @@ class Asteroid < GameObject
     #random rotation
     @rotation_speed = rand * 8 - 4
 
-    random_speed = speed_delta(angle, rand * 0.8 + 0.5)
+    random_speed = speed_delta(angle, rand * 0.8 + 1)
 
     # inherit velocity
     if speed
