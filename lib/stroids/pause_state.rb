@@ -7,13 +7,18 @@ class PauseState < StroidsState
   end
 
   def button_down(id)
-    if [Gosu::KbP, Gosu::KbEscape].include? id
-      @window.state = @state
+    case id
+      when Gosu::KbP, Gosu::KbEscape
+        # Return to previous state
+        @window.state = @state
+      else
     end
   end
 
   def draw
+    # Draw previous state in the background
     @state.draw
+
     @background.draw 0, 0, ZOrder::OVERLAY
     @heading.draw 175, 120, ZOrder::OVERLAY
   end
