@@ -3,7 +3,7 @@ class Score
 
   def initialize(window)
     @window = window
-    @font = Gosu::Font.new window, '04b09', 8
+    @font = window.load_font('04b09' , 8)
     reset
   end
 

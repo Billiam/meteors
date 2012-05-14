@@ -2,30 +2,61 @@ class SplashState < StroidsState
   def initialize(window)
     super window
 
-    @animated_objects = []
-    #
+    @asteroids = []
+    @effects = []
+    @new_asteroids = []
+
     @heading = Gosu::Image.from_text window, "TOTALLY NOT ASTEROIDS", "Komika Boogie", 84
     @title_font = window.load_font '04b_20', 32
 
-    #@title_font = Gosu::Font.new window, '04b_20', 32
-
     @background = dark_overlay
+
 
     @waves = WaveManager.new self, window
     @waves.set_wave 10
   end
 
   def add_asteroid asteroid
-    @animated_objects << asteroid
+    asteroid.add_observer(self, :asteroid_updated)
+    @asteroids << asteroid
+  end
+
+  def moving_objects
+    @asteroids + @effects
+  end
+
+  # Callback when asteroids are destroyed
+  def asteroid_updated (asteroid, new_asteroids)
+    @new_asteroids += new_asteroids
   end
 
   def update
-    @animated_objects.each(&:update)
+    @asteroids.each(&:update)
+
     wrap_objects
+
+    # remove asteroids
+    @asteroids.reject! do |asteroid|
+      unless asteroid.is_live?
+        @effects += asteroid.effect
+      end
+    end
+
+    # remove effects
+    @effects.reject! do |effect|
+      effect.is_dead?
+    end
+
+    #add newly spawned asteroids
+    @new_asteroids.each{|item| add_asteroid(item)}
+    @new_asteroids = []
+
+    #update effects
+    @effects.each(&:update)
   end
 
   def wrap_objects
-    @animated_objects.each do |item|
+    moving_objects.each do |item|
       item.vector.x %= @window.width
       item.vector.y %= @window.height
     end
@@ -34,7 +65,9 @@ class SplashState < StroidsState
   def draw
     @background.draw 0, 0, ZOrder::OVERLAY
 
-    @animated_objects.each(&:draw)
+    @asteroids.each(&:draw)
+    @effects.each(&:draw)
+
     @heading.draw 175, 120, ZOrder::OVERLAY
     @title_font.draw("press SPACE to start", 175, 345, ZOrder::OVERLAY, 0.3, 0.3)
   end
@@ -42,12 +75,24 @@ class SplashState < StroidsState
   def button_down(id)
     case id
       when Gosu::KbZ
-        @animated_objects.first.hit! nil
+        @asteroids.each(&:hit!)
       when Gosu::KbSpace
         @window.state = PlayState.new @window
       when Gosu::KbEscape
         @window.close
+      when Gosu::MsLeft
+        click(@window.mouse_x, @window.mouse_y)
       else
+    end
+  end
+
+  def click (mouse_x, mouse_y)
+    pos = RQuad::Vector.new(mouse_x, mouse_y)
+    @asteroids.each do |asteroid|
+      if asteroid.vector.dist_to(pos) < asteroid.radius
+        asteroid.hit!
+        break
+      end
     end
   end
 end

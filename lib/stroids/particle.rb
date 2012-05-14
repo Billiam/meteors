@@ -23,7 +23,7 @@ class Particle
     @dead
   end
 
-  def update (tick)
+  def update (tick=1.0)
     @speed.z -= 0.05/tick
 
     if @vector.z + @speed.z <= 0

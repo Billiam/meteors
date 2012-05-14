@@ -3,6 +3,10 @@ class Game < Gosu::Window
 
   attr_accessor :ship, :state, :height, :width, :timers
 
+  def needs_cursor?
+    true
+  end
+
   def initialize
     # Disable caching by default
     # Large performance hit during all image creatiion

@@ -60,7 +60,7 @@ class Asteroid < GameObject
 
   end
 
-  def hit!(item)
+  def hit!(item=nil)
     @health -= 1
     if @health < 1
       @dead = true

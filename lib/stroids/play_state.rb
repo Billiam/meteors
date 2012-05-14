@@ -80,7 +80,7 @@ class PlayState < StroidsState
           #create  new?
         @window.state = SplashState.new @window
       when Gosu::KbF2
-        @asteroids.each {|i| i.hit! nil} if @active
+        @asteroids.each(&:hit!) if @active
       else
     end
   end
@@ -196,6 +196,6 @@ class PlayState < StroidsState
   end
 
   def draw
-    (objects + @effects).each(&:draw)
+    (objects + @effects + [@score]).each(&:draw)
   end
 end
