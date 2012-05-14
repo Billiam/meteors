@@ -1,4 +1,3 @@
-require 'rquad'
 class Collider
   def initialize(width, height)
     @width = width

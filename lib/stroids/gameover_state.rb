@@ -17,7 +17,7 @@ class GameoverState < StroidsState
       when Gosu::KbSpace
         @window.state = PlayState.new @window
       when Gosu::KbEscape
-        @window.close
+        @window.state = SplashState.new @window
       else
     end
   end

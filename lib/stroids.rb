@@ -1,6 +1,7 @@
 require 'gosu'
 require 'observer'
 require 'texplay'
+require 'rquad'
 
 require './stroids/game_object'
 require './stroids/stroids_state'

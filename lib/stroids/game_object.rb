@@ -1,5 +1,3 @@
-require 'rquad'
-
 class GameObject
   attr_accessor :speed, :angle, :vector
 
