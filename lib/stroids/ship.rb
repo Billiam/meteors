@@ -19,14 +19,6 @@ class Ship < GameObject
 
     @statistics = stats.new 0, 0, 0
 
-    @angle = 0
-    @health = 1
-    @dead = false
-    @active_shots = 0
-    @radius = 3
-    @thrust = false
-    @hyper = false
-
     @tick = 1.0
 
     @thrust_instance = nil
@@ -37,6 +29,8 @@ class Ship < GameObject
     @ship_img = window.load_image('ship')
     @shadow_img = window.load_image('ship-shadow')
     @thrust_img = window.load_image('ship-thrust')
+
+    spawn
   end
 
   def can_fire?
@@ -89,6 +83,18 @@ class Ship < GameObject
 
   def accelerate
     @speed += speed_delta @angle, ship_power
+  end
+
+  def spawn
+    @angle = 0
+    @health = 1
+    @dead = false
+    @active_shots = 0
+    @radius = 3
+    @thrust = false
+    @hyper = false
+
+    stop
   end
 
   def hit! (item)

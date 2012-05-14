@@ -1,5 +1,5 @@
 class PlayState < StroidsState
-  attr_reader :ship, :asteroids
+  attr_reader :ship, :asteroids, :lives
 
   def initialize(window)
     super
@@ -13,10 +13,17 @@ class PlayState < StroidsState
     @collider = Collider.new @width, @height
     @waves = WaveManager.new self, window
     @score = Score.new window
+    @lives_display = Lives.new self, window
 
     @bullettime_instance = nil
     @bullettime_sound = window.load_sound('matrix')
+    @lives = 3
+
     start
+  end
+
+  def overlays
+    [@lives_display, @score]
   end
 
   def score
@@ -157,8 +164,7 @@ class PlayState < StroidsState
     # check for player death
     if ! @ship.is_live? && @active
       @active = false
-      @effects += @ship.effect
-      game_over
+      ship_explode!
     end
 
     #update effects
@@ -166,14 +172,23 @@ class PlayState < StroidsState
 
     # Go to next wave
     @waves.update
-
   end
 
-  def game_over
+  def ship_explode!
     bullettime_off
     @ship.thrust = false
-    @window.timers.set_timeout 3000 do
-      @window.state = GameoverState.new(@window, self)
+    @effects += @ship.effect
+    @lives -= 1
+    if @lives < 1
+      @window.timers.set_timeout 3000 do
+        @window.state = GameoverState.new(@window, self)
+      end
+    else
+      @window.timers.set_timeout 3000 do
+        @active = true
+        @ship.spawn
+        @ship.warp(400,300)
+      end
     end
   end
 
@@ -197,5 +212,6 @@ class PlayState < StroidsState
 
   def draw
     (objects + @effects + [@score]).each(&:draw)
+    overlays.each(&:draw)
   end
 end
