@@ -3,6 +3,7 @@ class Game < Gosu::Window
 
   attr_accessor :ship, :state, :height, :width, :timers
 
+  # Display cursor
   def needs_cursor?
     true
   end
@@ -77,10 +78,15 @@ class Game < Gosu::Window
   def font_path(name)
     File.join(MEDIA, 'fonts', "#{name}.ttf")
   end
+
   # Load and cache fonts from media path
   def load_font(name, size)
     @fonts ||= {}
     @fonts[[name,size]] ||= Gosu::Font.new self, font_path(name), size
   end
 
+  #Create an overlay with texplay (expensive))
+  def dark_overlay
+    @overlay ||= TexPlay::create_blank_image(self, @width, @height, {:color => [0, 0, 0, 0.6 ]})
+  end
 end

@@ -3,10 +3,6 @@ class StroidsState
     @window = window
   end
 
-  def dark_overlay
-    TexPlay::create_blank_image(@window, @window.width, @window.height, {:caching => false, :color => [0, 0, 0, 0.6 ]})
-  end
-
   def button_up(id)
   end
 

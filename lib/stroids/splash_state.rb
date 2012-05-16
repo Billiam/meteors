@@ -9,7 +9,7 @@ class SplashState < StroidsState
     @heading = Gosu::Image.from_text window, " TOTALLY NOT ASTEROIDS", window.font_path('KOMIKABG'), 84
     @title_font = window.load_font '04B20', 32
 
-    @background = dark_overlay
+    @background = window.dark_overlay
 
 
     @waves = WaveManager.new self, window

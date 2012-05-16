@@ -3,7 +3,7 @@ class PauseState < StroidsState
     super window
     @state = state
     @heading = Gosu::Image.from_text(window, ' Paused', window.font_path('KOMIKABG'), 128)
-    @background = dark_overlay
+    @background = window.dark_overlay
   end
 
   def button_down(id)

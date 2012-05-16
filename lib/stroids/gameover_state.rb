@@ -5,7 +5,7 @@ class GameoverState < StroidsState
     @state = state
     @heading = Gosu::Image.from_text(window, ' Game Over!', window.font_path('KOMIKABG'), 128)
     @title_font = window.load_font('04B20', 32)
-    @background = dark_overlay
+    @background = window.dark_overlay
   end
 
   def update
