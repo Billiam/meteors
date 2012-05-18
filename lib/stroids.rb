@@ -3,12 +3,14 @@ require 'observer'
 require 'texplay'
 require 'rquad'
 
-require './stroids/game_object'
-require './stroids/stroids_state'
-require './stroids/particle'
+prerequisites = %w(game_object stroids_state particle)
+BASE_PATH = File.dirname(File.absolute_path(__FILE__))
 
+prerequisites.each do |file|
+  require File.join(BASE_PATH, 'stroids', file)
+end
 
-Dir["./stroids/*.rb"].each do |file|
+Dir[File.join(BASE_PATH, 'stroids', '*.rb')].each do |file|
   require file
 end
 

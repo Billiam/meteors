@@ -1,5 +1,5 @@
 class Game < Gosu::Window
-  MEDIA = File.join('..', 'media')
+  MEDIA = File.realpath(File.join(BASE_PATH, '..', 'media'))
 
   attr_accessor :ship, :state, :height, :width, :timers
 
