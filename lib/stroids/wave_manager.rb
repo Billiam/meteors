@@ -1,6 +1,6 @@
 class WaveManager
   BASE_ASTEROIDS = 4
-  WAVE_DELAY = 1500
+  WAVE_DELAY = 2000
 
   attr_reader :wave
 
@@ -32,10 +32,11 @@ class WaveManager
   end
 
   def next_wave
+    @state.ship.protect!
     @wave += 1
     add_asteroids
   end
-;
+
   def add_asteroids
     (@wave + BASE_ASTEROIDS).times do
       position = RQuad::Vector.new(rand(@window.width), rand(@window.height))

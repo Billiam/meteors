@@ -48,7 +48,9 @@ class Collider
 
   def notify_collisions
     #check shots for astroid colissions
-    get_collisions(@shots + [@ship], @asteroids_quad) do |item, asteroid|
+    collideables = @shots.dup
+    collideables.push(@ship) if @ship.collides?
+    get_collisions(collideables, @asteroids_quad) do |item, asteroid|
       asteroid.hit! item
       item.hit! asteroid
     end

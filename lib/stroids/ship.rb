@@ -3,6 +3,7 @@ class Ship < GameObject
   attr_reader :statistics
 
   FRICTION = 0.005
+  SPAWN_PROTECT_TIME = 2.5 * 60
 
   class Effect < Particle
     def initialize (window, lifetime, vector, speed = 0)
@@ -33,6 +34,10 @@ class Ship < GameObject
     spawn
   end
 
+  def collides?
+    ! @protected
+  end
+
   def can_fire?
     @active_shots < 4 && is_live?
   end
@@ -50,14 +55,24 @@ class Ship < GameObject
   end
 
   def turn_left(tick)
-    @angle = (@angle - (turn_speed / tick)) % 360
+    @angle -= rotate(tick)
+    @angle %= 360
   end
 
   def turn_right(tick)
-    @angle =  (@angle + (turn_speed / tick)) % 360
+    @angle += rotate(tick)
+    @angle %= 360
   end
 
+  def rotate(tick)
+    speed = turn_speed / tick
+    @statistics.fuel += speed / 1500
+    speed
+  end
+
+
   def fire
+    stop_protect
     @statistics.shots += 1
     @shot_sound.play(1, sound_speed)
     [Shot.new(@window, @vector, @angle, @speed)]
@@ -94,7 +109,13 @@ class Ship < GameObject
     @thrust = false
     @hyper = false
 
+    protect!
     stop
+  end
+
+  def protect!
+    @protected = true
+    @protect_time = SPAWN_PROTECT_TIME
   end
 
   def hit! (item)
@@ -112,12 +133,25 @@ class Ship < GameObject
     ! @dead
   end
 
+  def update_spawn_protect
+    if @protected
+      @protect_time -= 1/@tick
+      stop_protect if @protect_time <= 0
+    end
+  end
+
+  def stop_protect
+    @protected = false
+  end
+
   def update(tick)
     if tick != @tick
       @tick = tick
       #update speed of playing sounds
       @thrust_instance.speed = sound_speed if @thrust_instance
     end
+
+    update_spawn_protect
 
     #slow down based on friction
     @speed *= 1 - FRICTION
@@ -132,12 +166,22 @@ class Ship < GameObject
     @vector += create_vector(@speed.x, @speed.y) / tick
   end
 
+  def opacity
+    ((@protect_time * 10 % 300) - 150).abs + 25
+  end
+
   def draw
     return unless is_live?
 
+    if @protected
+      color = Gosu::Color::from_ahsv(opacity, 0, 0, 1)
+    else
+      color = 0xffffffff
+    end
+
     image = @thrust ? @thrust_img : @ship_img
     @window.scale(1, 0.55, @vector.x, @vector.y) do
-      image.draw_rot(@vector.x, @vector.y, zorder, @angle)
+      image.draw_rot(@vector.x, @vector.y, zorder, @angle, 0.5, 0.5, 1, 1, color)
     end
 
     @window.scale(1, 0.55, @vector.x, @vector.y + 30) do
