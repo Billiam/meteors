@@ -43,7 +43,7 @@ class Ship < GameObject
   end
 
   def turn_speed
-    @hyper ? 9 : 4
+    @hyper ? 12 : 6
   end
 
   def ship_power
