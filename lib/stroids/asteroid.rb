@@ -3,12 +3,28 @@ class Asteroid < GameObject
   attr_reader :radius, :points, :health
 
   class Effect < Particle
-    def initialize (window, lifetime, vector, speed = 0)
+    def initialize (window, lifetime, vector, speed)
       super
-      @image = window.load_image 'asteroid-particle'
+      @image = window.load_image('asteroid-particle')
     end
   end
 
+  class Point < Particle
+    #todo, add shadow handling to mixin
+    def initialize (window, lifetime, vector, speed, points)
+      super window, lifetime, vector, speed
+      @tone = 0.5
+      @shadow = false
+      @image = window.font_image(points, 10)
+    end
+
+    def update (tick=1.0)
+      @life -= 1/tick
+      @vector.y -= 1/tick
+      @dead = true if @life <= 0
+    end
+
+  end
 
   def initialize (window, vector, speed=nil, size=3)
     super window
@@ -28,7 +44,7 @@ class Asteroid < GameObject
         @pitch = 0.85
       when 3
         @radius = 24
-        @points = 120
+        @points = 20
         @image = window.load_image 'asteroid4'
         @shadow = window.load_image 'shadow4'
         @pitch = 0.65
@@ -105,7 +121,7 @@ class Asteroid < GameObject
   # return effect particles for explosion as an array
   def effect
     particle_count = rand(5) + 10
-    particle_count.times.collect do
+    particles = particle_count.times.collect do
       velocity = rand * 5 - 2.5
       life = rand(60) + 60
 
@@ -116,5 +132,11 @@ class Asteroid < GameObject
       # create a new single particle
       Effect.new @window, life, @vector, speed
     end
+
+    #Add points particle
+    offset = @vector.dup
+    offset.x += 15
+    offset.y -= 15
+    particles << Point.new(@window, 45, offset, create_vector, @points)
   end
 end

@@ -79,6 +79,11 @@ class Game < Gosu::Window
     File.join(MEDIA, 'fonts', "#{name}.ttf")
   end
 
+  def font_image(text, size)
+    @font_images ||= {}
+    @font_images[[text, size]] ||= Gosu::Image.from_text(self, text, font_path('04B09'), size)
+  end
+
   # Load and cache fonts from media path
   def load_font(name, size)
     @fonts ||= {}

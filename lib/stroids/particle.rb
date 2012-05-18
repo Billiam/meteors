@@ -1,14 +1,16 @@
 class Particle
   attr_accessor :vector
 
+
   def initialize (window, lifetime, vector, speed=nil)
     @window = window
+    @shadow = true
     @life = @lifetime = lifetime
 
     @vector = vector
     # Add a position to represent height
     @vector.z = 20
-
+    @tone = 0.8
     @speed = speed || RQuad::Vector.new(0, 0)
     @speed.z = rand * 3 - 1.5
 
@@ -43,12 +45,12 @@ class Particle
 
   def draw
     alpha = [opacity, 0].max
-    color = Gosu::Color::from_ahsv(alpha, 0, 0, 0.8)
+    color = Gosu::Color::from_ahsv(alpha, 0, 0, @tone)
     shadow_color = Gosu::Color::from_ahsv(alpha, 0, 0, 0)
 
 
-    @image.draw @vector.x, @vector.y + (20 - @vector.z), zorder, 1, 1, color
+    @image.draw(@vector.x, @vector.y + (20 - @vector.z), zorder, 1, 1, color)
     #draw shadow
-    @image.draw @vector.x, @vector.y + 22, ZOrder::SHADOW, 1, 1, shadow_color
+    @image.draw(@vector.x, @vector.y + 22, ZOrder::SHADOW, 1, 1, shadow_color) if @shadow
   end
 end
