@@ -21,6 +21,6 @@ class FPSCounter
       @frames_counter = 0
       @milliseconds_before = Gosu::milliseconds
     end
-    @font.draw("FPS: "+@fps.to_s, 100, 5, ZOrder::OVERLAY, 0.5, 0.5) if @show_fps
+    @font.draw("FPS: "+@fps.to_s, 200, 5, ZOrder::OVERLAY, 0.5, 0.5) if @show_fps
   end
 end
