@@ -1,5 +1,5 @@
 class PlayState < StroidsState
-  attr_reader :ship, :asteroids, :lives
+  attr_reader :ship, :asteroids, :lives, :score
 
   def initialize(window)
     super
@@ -13,29 +13,26 @@ class PlayState < StroidsState
     @collider = Collider.new @width, @height
     @waves = WaveManager.new self, window
     @score = Score.new window
-    @lives_display = Lives.new self, window
+
+    @overlays = [
+        @score,
+        Lives.new(self, window),
+        BullettimeOverlay.new(window)
+    ]
 
     @bullettime_instance = nil
     @bullettime_sound = window.load_sound('matrix')
+
     @lives = 3
 
     start
   end
 
-  def overlays
-    [@lives_display, @score]
-  end
-
-  def score
-    @score.score
-  end
-
   # Initialize game state
   def start
-    #@overlays[:score].visible = true
-
     #Reset objects and state
     @active = true
+
     @asteroids = []
     @effects = []
     @shots = []
@@ -80,11 +77,8 @@ class PlayState < StroidsState
       when Gosu::KbP
         @window.state = PauseState.new @window, self
       when Gosu::KbX
-        bullettime_on
+        bullettime_on if @active
       when Gosu::KbEscape
-        # return to splash screen
-        #  splash
-          #create  new?
         @window.state = SplashState.new @window
       when Gosu::KbF2
         @asteroids.each(&:hit!) if @active
@@ -117,7 +111,13 @@ class PlayState < StroidsState
     (@asteroids + @shots + [@ship]).compact
   end
 
+  def update_counter
+    @tick_count += 1/@tick
+  end
+
   def update
+    super
+
     if @ship.is_live?
       @ship.thrust = button_down? Gosu::KbUp
 
@@ -180,11 +180,11 @@ class PlayState < StroidsState
     @effects += @ship.effect
     @lives -= 1
     if @lives < 1
-      @window.timers.set_timeout 3000 do
+       later 3*60 do
         @window.state = GameoverState.new(@window, self)
       end
     else
-      @window.timers.set_timeout 3000 do
+      later 3*60 do
         @active = true
         @ship.spawn
         @ship.warp(400,300)
@@ -205,13 +205,12 @@ class PlayState < StroidsState
     @new_asteroids += new_asteroids
     #Add points
     unless asteroid.is_live?
-      @score.add asteroid.points
+      @score.add(asteroid.points)
       @ship.statistics.asteroids += 1
     end
   end
 
   def draw
-    (objects + @effects + [@score]).each(&:draw)
-    overlays.each(&:draw)
+    (objects + @effects + @overlays).each(&:draw)
   end
 end

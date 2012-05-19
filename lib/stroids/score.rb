@@ -3,12 +3,12 @@ class Score
 
   def initialize(window)
     @window = window
-    @font = window.load_font('04B09' , 8)
+    @font = window.load_font('BITLOW' , 28)
     reset
   end
 
   def sub(score)
-    @score = [0, @score - score].max
+    @score -= score
   end
 
   def add(score)
@@ -19,7 +19,11 @@ class Score
     @score = 0
   end
 
+  def to_s
+    @score.to_s
+  end
+
   def draw
-    @font.draw "SCORE: #@score", 10, 10, ZOrder::GUI
+    @font.draw("#@score", 5, 5, ZOrder::OVERLAY, 0.5, 0.5)
   end
 end

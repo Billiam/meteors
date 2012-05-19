@@ -1,4 +1,6 @@
 class Ship < GameObject
+  include Observable
+
   attr_accessor :hyper, :health, :radius, :active_shots
   attr_reader :statistics
 
@@ -12,42 +14,16 @@ class Ship < GameObject
     end
   end
 
-
-  def initialize (window)
+  def initialize (window, tick=1.0)
     super window
 
     stats = Struct.new :shots, :fuel, :asteroids
 
     @statistics = stats.new 0, 0, 0
-
-    @tick = 1.0
-
-    @thrust_instance = nil
-    @shot_sound = window.load_sound('fire')
-    @engine_sound = window.load_sound('engine')
-    @explode_sound = window.load_sound('ship_explode')
-
-    @ship_img = window.load_image('ship')
-    @shadow_img = window.load_image('ship-shadow')
-    @thrust_img = window.load_image('ship-thrust')
-
+    @tick_count = 0.0
+    @tick = tick
+    initialize_media
     spawn
-  end
-
-  def collides?
-    ! @protected
-  end
-
-  def can_fire?
-    @active_shots < 4 && is_live?
-  end
-
-  def turn_speed
-    @hyper ? 12 : 6
-  end
-
-  def ship_power
-    @hyper ? 0.1 : 0.05
   end
 
   def stop
@@ -64,12 +40,14 @@ class Ship < GameObject
     @angle %= 360
   end
 
-  def rotate(tick)
-    speed = turn_speed / tick
-    @statistics.fuel += speed / 1500
-    speed
+
+  def collides?
+    ! @protected
   end
 
+  def can_fire?
+    @active_shots < 4 && is_live?
+  end
 
   def fire
     stop_protect
@@ -91,14 +69,6 @@ class Ship < GameObject
     end
   end
 
-  def sound_speed
-    1/@tick
-  end
-
-
-  def accelerate
-    @speed += speed_delta @angle, ship_power
-  end
 
   def spawn
     @angle = 0
@@ -133,6 +103,7 @@ class Ship < GameObject
     ! @dead
   end
 
+
   def update_spawn_protect
     if @protected
       @protect_time -= 1/@tick
@@ -145,6 +116,7 @@ class Ship < GameObject
   end
 
   def update(tick)
+    @tick_count += tick
     if tick != @tick
       @tick = tick
       #update speed of playing sounds
@@ -163,11 +135,7 @@ class Ship < GameObject
     end
 
     # add speed including current tick to current position
-    @vector += create_vector(@speed.x, @speed.y) / tick
-  end
-
-  def opacity
-    ((@protect_time * 10 % 300) - 150).abs + 25
+    @vector += @speed / tick
   end
 
   def draw
@@ -202,5 +170,45 @@ class Ship < GameObject
       # create a new single particle
       Effect.new @window, life , @vector, speed
     end
+  end
+
+  protected
+
+  def turn_speed
+    @hyper ? 12 : 6
+  end
+
+  def ship_power
+    @hyper ? 0.1 : 0.05
+  end
+
+  def rotate(tick)
+    speed = turn_speed / tick
+    @statistics.fuel += speed / 1500
+    speed
+  end
+
+  def sound_speed
+    1/@tick
+  end
+
+  def accelerate
+    @speed += speed_delta @angle, ship_power
+  end
+
+  def opacity
+    ((@protect_time * 10 % 300) - 150).abs + 25
+  end
+
+  def initialize_media
+
+    @thrust_instance = nil
+    @shot_sound = @window.load_sound('fire')
+    @engine_sound = @window.load_sound('engine')
+    @explode_sound = @window.load_sound('ship_explode')
+
+    @ship_img = @window.load_image('ship')
+    @shadow_img = @window.load_image('ship-shadow')
+    @thrust_img = @window.load_image('ship-thrust')
   end
 end

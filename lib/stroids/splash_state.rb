@@ -6,8 +6,8 @@ class SplashState < StroidsState
     @effects = []
     @new_asteroids = []
 
-    @heading = Gosu::Image.from_text window, " TOTALLY NOT ASTEROIDS", window.font_path('KOMIKABG'), 84
-    @title_font = window.load_font '04B20', 32
+    @heading = window.font_image(' TOTALLY NOT ASTEROIDS', 'KOMIKABG', 84)
+    @title_font = window.load_font('04B20', 32)
 
     @background = window.dark_overlay
 

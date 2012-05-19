@@ -15,7 +15,7 @@ class Asteroid < GameObject
       super window, lifetime, vector, speed
       @tone = 0.5
       @shadow = false
-      @image = window.font_image(points, 10)
+      @image = window.font_image(points, '04B09', 10)
     end
 
     def update (tick=1.0)
@@ -88,7 +88,7 @@ class Asteroid < GameObject
 
       spawned = @split_size ? [split_factory, split_factory] : []
 
-      # Trigger chanegs for observers
+      # Trigger changes for observers
       changed
       notify_observers self, spawned
     end

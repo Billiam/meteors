@@ -1,6 +1,6 @@
 class WaveManager
   BASE_ASTEROIDS = 4
-  WAVE_DELAY = 2000
+  WAVE_DELAY = 2
 
   attr_reader :wave
 
@@ -25,7 +25,7 @@ class WaveManager
   def update
     if @wave != @wave_ended && @state.round_complete?
       @wave_ended = @wave
-      @window.timers.set_timeout WAVE_DELAY do
+      @state.later 2*60 do
         next_wave
       end
     end

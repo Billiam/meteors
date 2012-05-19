@@ -3,7 +3,7 @@ class FPSCounter
   attr_reader :fps
 
   def initialize(window)
-    @font = Gosu::Font.new window, 'DokChampa', 40
+    @font = window.load_font('BITLOW', 28)
     @frames_counter = 0
     @milliseconds_before = Gosu::milliseconds
     @show_fps = false
@@ -21,6 +21,6 @@ class FPSCounter
       @frames_counter = 0
       @milliseconds_before = Gosu::milliseconds
     end
-    @font.draw("FPS: "+@fps.to_s, 200, 5, ZOrder::OVERLAY, 0.5, 0.5) if @show_fps
+    @font.draw('%.1f' % fps, 600, 5, ZOrder::OVERLAY, 0.5, 0.5) if @show_fps
   end
 end

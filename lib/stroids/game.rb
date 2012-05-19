@@ -1,7 +1,7 @@
 class Game < Gosu::Window
   MEDIA = File.realpath(File.join(BASE_PATH, '..', 'media'))
 
-  attr_accessor :ship, :state, :height, :width, :timers
+  attr_accessor :state, :height, :width
 
   # Display cursor
   def needs_cursor?
@@ -24,12 +24,8 @@ class Game < Gosu::Window
 
     @counter = FPSCounter.new self
 
-    #Singleton?
-    @timers = Timers.new
-
     #Set current state to splash screen
     @state = SplashState.new self
-    #[0.05, 0.05, 0.05, 1]
     @background = TexPlay::create_blank_image(self, @width, @height, {:color => [0.08, 0.08, 0.08, 1]})
   end
 
@@ -51,7 +47,6 @@ class Game < Gosu::Window
 
   # Pass update through to active state
   def update
-    @timers.update
     @state.update
   end
 
@@ -75,13 +70,10 @@ class Game < Gosu::Window
     @sounds[name] ||= Gosu::Sample.new self, File.join(MEDIA, 'audio', "#{name}.wav")
   end
 
-  def font_path(name)
-    File.join(MEDIA, 'fonts', "#{name}.ttf")
-  end
 
-  def font_image(text, size)
+  def font_image(text, font = '04B09', size = 10)
     @font_images ||= {}
-    @font_images[[text, size]] ||= Gosu::Image.from_text(self, text, font_path('04B09'), size)
+    @font_images[[text, font, size]] ||= Gosu::Image.from_text(self, text, font_path(font), size)
   end
 
   # Load and cache fonts from media path
@@ -93,5 +85,11 @@ class Game < Gosu::Window
   #Create an overlay with texplay (expensive))
   def dark_overlay
     @overlay ||= TexPlay::create_blank_image(self, @width, @height, {:color => [0, 0, 0, 0.6 ]})
+  end
+
+  protected
+
+  def font_path(name)
+    File.join(MEDIA, 'fonts', "#{name}.ttf")
   end
 end

@@ -3,7 +3,7 @@ class GameoverState < StroidsState
     super window
 
     @state = state
-    @heading = Gosu::Image.from_text(window, ' Game Over!', window.font_path('KOMIKABG'), 128)
+    @heading = window.font_image(' Game Over!', 'KOMIKABG', 128)
     @title_font = window.load_font('04B20', 32)
     @background = window.dark_overlay
   end
@@ -27,9 +27,11 @@ class GameoverState < StroidsState
 
     @background.draw 0, 0, ZOrder::OVERLAY
     @heading.draw 175, 120, ZOrder::OVERLAY
-    @title_font.draw("Final score: #{@state.score}", 175, 345, ZOrder::OVERLAY, 0.5, 0.5)
-    ship = @state.ship
 
+    @title_font.draw("Final score: #{@state.score}", 175, 345, ZOrder::OVERLAY, 0.5, 0.5)
+
+
+    ship = @state.ship
     accuracy = ship.statistics.shots == 0 ? 100 : (ship.statistics.asteroids / ship.statistics.shots.to_f * 100).floor
 
     #draw statistics
