@@ -1,4 +1,5 @@
-class BullettimeOverlay
+class Bullettime
+  attr_accessor :percent
 
   def initialize(window, percent = 1.0)
     @window = window

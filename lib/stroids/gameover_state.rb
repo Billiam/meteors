@@ -47,5 +47,8 @@ class GameoverState < StroidsState
       @title_font.draw item, 175, pos, ZOrder::OVERLAY, 0.3, 0.3
       pos += 20
     end
+
+    @title_font.draw("press SPACE to start", 175, 550, ZOrder::OVERLAY, 0.3, 0.3)
+
   end
 end

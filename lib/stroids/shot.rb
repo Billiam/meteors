@@ -33,6 +33,11 @@ class Shot < GameObject
   def hit! (asteroid)
     @collisions += 1
     @expire = true if @collisions >= COLLISION_LIMIT
+    effect
+  end
+
+  def effect
+    []
   end
 
   def draw

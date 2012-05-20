@@ -13,17 +13,32 @@ class Asteroid < GameObject
     #todo, add shadow handling to mixin
     def initialize (window, lifetime, vector, speed, points)
       super window, lifetime, vector, speed
-      @tone = 0.5
+      @tone = 1.0
       @shadow = false
       @image = window.font_image(points, '04B09', 10)
     end
 
     def update (tick=1.0)
       @life -= 1/tick
-      @vector.y -= 1/tick
+      #@vector.y -= 1/tick
       @dead = true if @life <= 0
     end
+    def percent
+      @life / @lifetime
+    end
 
+    def opacity
+      percent * 240
+    end
+
+    def size
+       (1 - percent)
+    end
+
+    def draw
+      color = Gosu::Color::from_ahsv(opacity, 0, 0, @tone)
+      @image.draw(@vector.x, @vector.y + (20 - @vector.z), zorder, 1.5 * size + 1, 1, color)
+    end
   end
 
   def initialize (window, vector, speed=nil, size=3)
@@ -50,7 +65,6 @@ class Asteroid < GameObject
         @pitch = 0.65
       else
     end
-
 
     @sound = window.load_sound 'asteroid_explode'
 
@@ -79,19 +93,25 @@ class Asteroid < GameObject
 
   end
 
+  #Returns an array of effects and asteroids
   def hit!(item=nil)
+    spawned = []
+    effects = []
+
     @health -= 1
     if @health < 1
       @dead = true
 
       @sound.play 0.8, @pitch/@tick
 
-      spawned = @split_size ? [split_factory, split_factory] : []
-
+      spawned = [split_factory, split_factory] if @split_size
+      effects = effect
       # Trigger changes for observers
       changed
-      notify_observers self, spawned
+      notify_observers self
     end
+
+    [effects, spawned]
   end
 
   # Factory method for splitting off new asteroids
@@ -118,6 +138,8 @@ class Asteroid < GameObject
     @shadow.draw @vector.x - @radius, @vector.y + 30, ZOrder::SHADOW, 1, 0.5
   end
 
+  protected
+
   # return effect particles for explosion as an array
   def effect
     particle_count = rand(5) + 10
@@ -137,6 +159,6 @@ class Asteroid < GameObject
     offset = @vector.dup
     offset.x += 15
     offset.y -= 15
-    particles << Point.new(@window, 45, offset, create_vector, @points)
+    particles << Point.new(@window, 30, offset, create_vector, @points)
   end
 end

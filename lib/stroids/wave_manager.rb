@@ -23,7 +23,7 @@ class WaveManager
   end
 
   def update
-    if @wave != @wave_ended && @state.round_complete?
+    if @wave != @wave_ended
       @wave_ended = @wave
       @state.later 2*60 do
         next_wave

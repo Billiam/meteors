@@ -17,17 +17,7 @@ class SplashState < StroidsState
   end
 
   def add_asteroid asteroid
-    asteroid.add_observer(self, :asteroid_updated)
     @asteroids << asteroid
-  end
-
-  def moving_objects
-    @asteroids + @effects
-  end
-
-  # Callback when asteroids are destroyed
-  def asteroid_updated (asteroid, new_asteroids)
-    @new_asteroids += new_asteroids
   end
 
   def update
@@ -37,30 +27,18 @@ class SplashState < StroidsState
 
     # remove asteroids
     @asteroids.reject! do |asteroid|
-      unless asteroid.is_live?
-        @effects += asteroid.effect
-      end
+      ! asteroid.is_live?
     end
 
     # remove effects
     @effects.reject! do |effect|
-      effect.is_dead?
+      ! effect.is_live?
     end
-
-    #add newly spawned asteroids
-    @new_asteroids.each{|item| add_asteroid(item)}
-    @new_asteroids = []
 
     #update effects
     @effects.each(&:update)
   end
 
-  def wrap_objects
-    moving_objects.each do |item|
-      item.vector.x %= @window.width
-      item.vector.y %= @window.height
-    end
-  end
 
   def draw
     @background.draw 0, 0, ZOrder::OVERLAY
@@ -86,11 +64,26 @@ class SplashState < StroidsState
     end
   end
 
+  protected
+
+  def moving_objects
+    @asteroids + @effects
+  end
+
+  def wrap_objects
+    moving_objects.each do |item|
+      item.vector.x %= @window.width
+      item.vector.y %= @window.height
+    end
+  end
+
   def click (mouse_x, mouse_y)
     pos = RQuad::Vector.new(mouse_x, mouse_y)
     @asteroids.each do |asteroid|
       if asteroid.vector.dist_to(pos) < asteroid.radius
-        asteroid.hit!
+        new_effects, new_asteroids = asteroid.hit!
+        new_asteroids.each(&method(:add_asteroid))
+        @effects.concat(new_effects)
         break
       end
     end

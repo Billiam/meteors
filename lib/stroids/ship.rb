@@ -19,6 +19,7 @@ class Ship < GameObject
 
     stats = Struct.new :shots, :fuel, :asteroids
 
+    @radius = 3
     @statistics = stats.new 0, 0, 0
     @tick_count = 0.0
     @tick = tick
@@ -75,7 +76,6 @@ class Ship < GameObject
     @health = 1
     @dead = false
     @active_shots = 0
-    @radius = 3
     @thrust = false
     @hyper = false
 
@@ -91,18 +91,19 @@ class Ship < GameObject
   def hit! (item)
     #reduce health / shield
     @health -= 1
-    @dead = health <= 0
-    destroy! if @dead
+    destroy! if health <= 0
   end
 
   def destroy!
+    @dead = true
     @explode_sound.play
+    self.thrust = false
+    effect
   end
 
   def is_live?
     ! @dead
   end
-
 
   def update_spawn_protect
     if @protected
@@ -130,8 +131,6 @@ class Ship < GameObject
 
     if @thrust
       @statistics.fuel += ship_power / tick
-    else
-
     end
 
     # add speed including current tick to current position
@@ -157,19 +156,8 @@ class Ship < GameObject
     end
   end
 
-  # return effect particles for explosion as an array
-  def effect
-    particle_count = rand(15) + 50
-    particle_count.times.collect do
-      # inherit speed from asteroid, and add random velocity
-      particle_speed = rand * 10 - 5
-      life = rand(60) + 120
-      random_speed = speed_delta(rand * 360, particle_speed)
-      random_speed.y *= 0.5
-      speed = random_speed + @speed
-      # create a new single particle
-      Effect.new @window, life , @vector, speed
-    end
+  def to_s
+    "H:#@health s:#@speed p:#@vector"
   end
 
   protected
@@ -198,6 +186,21 @@ class Ship < GameObject
 
   def opacity
     ((@protect_time * 10 % 300) - 150).abs + 25
+  end
+
+  # return effect particles for explosion as an array
+  def effect
+    particle_count = rand(15) + 50
+    particle_count.times.collect do
+      # inherit speed from asteroid, and add random velocity
+      particle_speed = rand * 10 - 5
+      life = rand(60) + 120
+      random_speed = speed_delta(rand * 360, particle_speed)
+      random_speed.y *= 0.5
+      speed = random_speed + @speed
+      # create a new single particle
+      Effect.new @window, life , @vector, speed
+    end
   end
 
   def initialize_media

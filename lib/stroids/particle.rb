@@ -21,6 +21,10 @@ class Particle
     ZOrder::OBJECT + @vector.y
   end
 
+  def is_live?
+    ! @dead
+  end
+
   def is_dead?
     @dead
   end
