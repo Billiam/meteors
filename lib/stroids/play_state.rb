@@ -103,16 +103,13 @@ class PlayState < StroidsState
     effects, new_asteroids = check_collisions
     expire_objects
 
+    @ship.active_shots = @shots.length
+
     # add spawned items
     @effects.concat effects
     new_asteroids.each {|a| add_asteroid(a)}
     #update effects
     @effects.each{|e| e.update(@tick)}
-
-
-    #TODO: Give ship access to shots pool?
-    @ship.active_shots = @shots.length
-
 
     # check for player death
     handle_player_death
@@ -121,15 +118,11 @@ class PlayState < StroidsState
     @waves.update if round_complete?
   end
 
-
-
   # Add an asteroid
   def add_asteroid(asteroid)
     asteroid.add_observer(self, :asteroid_destroyed)
     @asteroids << asteroid
   end
-
-
 
   #Callback when asteroids are destroyed
   def asteroid_destroyed (asteroid)
@@ -166,6 +159,7 @@ class PlayState < StroidsState
 
   def parse_input
     return unless @ship.is_live?
+
     @ship.thrust = button_down? Gosu::KbUp
 
     if button_down? Gosu::KbLeft

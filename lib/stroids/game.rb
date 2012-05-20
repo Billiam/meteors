@@ -29,6 +29,11 @@ class Game < Gosu::Window
     @background = TexPlay::create_blank_image(self, @width, @height, {:color => [0.08, 0.08, 0.08, 1]})
   end
 
+  def state=(state)
+    @state.teardown
+    state.setup
+    @state = state
+  end
 
   #pass button events through to active state
   def button_up(id)
