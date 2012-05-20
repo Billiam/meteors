@@ -20,12 +20,13 @@ class Game < Gosu::Window
     @height = 600
 
     super @width, @height, false
-    self.caption = "stroids"
+    self.caption = 'stroids'
 
     @counter = FPSCounter.new self
 
     #Set current state to splash screen
     @state = SplashState.new self
+
     @background = TexPlay::create_blank_image(self, @width, @height, {:color => [0.08, 0.08, 0.08, 1]})
   end
 

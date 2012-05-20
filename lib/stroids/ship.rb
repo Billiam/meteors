@@ -24,7 +24,11 @@ class Ship < GameObject
     @tick_count = 0.0
     @tick = tick
     initialize_media
-    spawn
+    spawn!
+  end
+
+  def bullettime_updated(enabled)
+    @hyper = enabled
   end
 
   def stop
@@ -70,8 +74,7 @@ class Ship < GameObject
     end
   end
 
-
-  def spawn
+  def spawn!
     @angle = 0
     @health = 1
     @dead = false
@@ -103,13 +106,6 @@ class Ship < GameObject
 
   def is_live?
     ! @dead
-  end
-
-  def update_spawn_protect
-    if @protected
-      @protect_time -= 1/@tick
-      stop_protect if @protect_time <= 0
-    end
   end
 
   def stop_protect
@@ -186,6 +182,13 @@ class Ship < GameObject
 
   def opacity
     ((@protect_time * 10 % 300) - 150).abs + 25
+  end
+
+  def update_spawn_protect
+    if @protected
+      @protect_time -= 1/@tick
+      stop_protect if @protect_time <= 0
+    end
   end
 
   # return effect particles for explosion as an array

@@ -12,15 +12,16 @@ class PlayState < StroidsState
     @collider = Collider.new @width, @height
     @waves = WaveManager.new self, window
     @score = Score.new window
+    @bullettime = Bullettime.new(window)
+    @bullettime.add_observer(self, :bullettime_updated)
+
     @lives = 0
 
     @overlays = [
         @score,
         Lives.new(self, window),
-        Bullettime.new(window)
+        @bullettime
     ]
-
-    init_sound
 
     start
   end
@@ -38,6 +39,7 @@ class PlayState < StroidsState
 
     @ship = Ship.new @window
     @ship.warp(400,300)
+    @bullettime.add_observer(@ship, :bullettime_updated)
 
     @score.reset
     @waves.reset
@@ -55,12 +57,12 @@ class PlayState < StroidsState
 
   def button_down(id)
     case id
-      when Gosu::KbZ
+      when Gosu::KbSpace
         add_shot @ship.fire if @ship.can_fire?
       when Gosu::KbP
         @window.state = PauseState.new @window, self
-      when Gosu::KbX
-        bullettime_on if @active
+      when Gosu::KbLeftShift
+        @bullettime.enable if @active
       when Gosu::KbEscape
         @window.state = SplashState.new @window
       when Gosu::KbF2
@@ -72,23 +74,19 @@ class PlayState < StroidsState
 
   def button_up(id)
     case id
-      when Gosu::KbX
-        bullettime_off
+      when Gosu::KbLeftShift
+        @bullettime.disable
       else
     end
   end
 
-  def bullettime_on
-    @tick = 5.0
-    #Is this necessary?
-    @ship.hyper = true
-    @bullettime_instance = @bullettime_sound.play 0.1
-  end
-
-  def bullettime_off
-    @tick = 1.0
-    @ship.hyper = false
-    @bullettime_instance.stop if @bullettime_instance
+  #callback when bullettime changes
+  def bullettime_updated(enabled)
+    if enabled
+      @tick = 5.0
+    else
+      @tick = 1.0
+    end
   end
 
   def update_counter
@@ -104,6 +102,7 @@ class PlayState < StroidsState
     expire_objects
 
     @ship.active_shots = @shots.length
+    @bullettime.update
 
     # add spawned items
     @effects.concat effects
@@ -130,6 +129,7 @@ class PlayState < StroidsState
     unless asteroid.is_live?
       @score.add(asteroid.points)
       @ship.statistics.asteroids += 1
+      @bullettime.restore(2.0)
     end
   end
 
@@ -138,11 +138,6 @@ class PlayState < StroidsState
   end
 
   protected
-
-  def init_sound
-    @bullettime_instance = nil
-    @bullettime_sound = @window.load_sound('matrix')
-  end
 
   # List of moving objects that wrap at screen edges
   def moving_objects
@@ -201,7 +196,7 @@ class PlayState < StroidsState
     return if @ship.is_live? || ! @active
     @active = false
 
-    bullettime_off  # stay?
+    @bullettime.disable
 
     @lives -= 1
 
@@ -213,8 +208,9 @@ class PlayState < StroidsState
   end
 
   def respawn_ship
+    @bullettime.reset!
     @active = true
-    @ship.spawn
+    @ship.spawn!
     @ship.warp(400,300)
   end
 
