@@ -6,7 +6,7 @@ class SplashState < StroidsState
     @effects = []
     @new_asteroids = []
 
-    @heading = window.font_image(' TOTALLY NOT ASTEROIDS', 'KOMIKABG', 84)
+    @heading = window.font_image(' Meteors', 'KOMIKABG', 120)
     @title_font = window.load_font('04B20', 32)
 
     @background = window.dark_overlay

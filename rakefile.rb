@@ -4,7 +4,7 @@ require 'releasy'
 
 #<<<
 Releasy::Project.new do
-  name "Stroids"
+  name "Meteors"
   version "0.5"
   verbose
   executable "lib/stroids.rb"
@@ -16,7 +16,7 @@ Releasy::Project.new do
 
   # Create a variety of releases, for all platforms.
   add_build :osx_app do
-    url "com.github.stroids"
+    url "com.github.billiam"
     wrapper File.join(File.dirname(__FILE__), "pkg", "rubies", "gosu-mac-wrapper-0.7.41.tar.gz") # Assuming this is where you downloaded this file.
     icon "media/icon.icns"
     add_package :tar_gz

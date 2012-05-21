@@ -20,7 +20,7 @@ class Game < Gosu::Window
     @height = 600
 
     super @width, @height, false
-    self.caption = 'stroids'
+    self.caption = 'Meteors'
 
     @counter = FPSCounter.new self
 
