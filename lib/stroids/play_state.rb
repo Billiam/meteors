@@ -28,7 +28,7 @@ class PlayState < StroidsState
 
   # Initialize game state
   def start
-    @lives = 1
+    @lives = 3
 
     #Reset objects and state
     @active = true
